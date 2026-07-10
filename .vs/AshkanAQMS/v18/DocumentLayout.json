@@ -1,0 +1,171 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\project\\C#\\AshkanAQMS\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|d:\\project\\c#\\ashkanaqms\\maindashboard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:maindashboard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|d:\\project\\c#\\ashkanaqms\\analyzermanagementcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:analyzermanagementcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|d:\\project\\c#\\ashkanaqms\\analyzermanagementcontrol.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:analyzermanagementcontrol.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|d:\\project\\c#\\ashkanaqms\\analyzerconfigform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:analyzerconfigform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|d:\\project\\c#\\ashkanaqms\\analyzerconfigform.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:analyzerconfigform.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|d:\\project\\c#\\ashkanaqms\\models\\analyzerconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:models\\analyzerconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|d:\\project\\c#\\ashkanaqms\\maindashboard.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:maindashboard.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|d:\\project\\c#\\ashkanaqms\\app.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:app.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|D:\\project\\C#\\AshkanAQMS\\analyzermanagementcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:analyzermanagementcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 4,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "AnalyzerConfigForm.Designer.cs",
+              "DocumentMoniker": "D:\\project\\C#\\AshkanAQMS\\AnalyzerConfigForm.Designer.cs",
+              "RelativeDocumentMoniker": "AnalyzerConfigForm.Designer.cs",
+              "ToolTip": "D:\\project\\C#\\AshkanAQMS\\AnalyzerConfigForm.Designer.cs",
+              "RelativeToolTip": "AnalyzerConfigForm.Designer.cs",
+              "ViewState": "AgIAAMcAAAAAAAAAAAAwwOkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-10T16:56:20.914Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "AnalyzerConfigForm.cs",
+              "DocumentMoniker": "D:\\project\\C#\\AshkanAQMS\\AnalyzerConfigForm.cs",
+              "RelativeDocumentMoniker": "AnalyzerConfigForm.cs",
+              "ToolTip": "D:\\project\\C#\\AshkanAQMS\\AnalyzerConfigForm.cs",
+              "RelativeToolTip": "AnalyzerConfigForm.cs",
+              "ViewState": "AgIAADMAAAAAAAAAAAAowFMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-10T16:55:53.735Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "AnalyzerManagementControl.cs",
+              "DocumentMoniker": "D:\\project\\C#\\AshkanAQMS\\AnalyzerManagementControl.cs",
+              "RelativeDocumentMoniker": "AnalyzerManagementControl.cs",
+              "ToolTip": "D:\\project\\C#\\AshkanAQMS\\AnalyzerManagementControl.cs",
+              "RelativeToolTip": "AnalyzerManagementControl.cs",
+              "ViewState": "AgIAAK0AAAAAAAAAAAAwwLgAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-10T07:28:57.821Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AnalyzerManagementControl.Designer.cs",
+              "DocumentMoniker": "D:\\project\\C#\\AshkanAQMS\\AnalyzerManagementControl.Designer.cs",
+              "RelativeDocumentMoniker": "AnalyzerManagementControl.Designer.cs",
+              "ToolTip": "D:\\project\\C#\\AshkanAQMS\\AnalyzerManagementControl.Designer.cs",
+              "RelativeToolTip": "AnalyzerManagementControl.Designer.cs",
+              "ViewState": "AgIAAJwAAAAAAAAAAAAwwL4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-10T07:29:43.845Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MainDashboard.cs",
+              "DocumentMoniker": "D:\\project\\C#\\AshkanAQMS\\MainDashboard.cs",
+              "RelativeDocumentMoniker": "MainDashboard.cs",
+              "ToolTip": "D:\\project\\C#\\AshkanAQMS\\MainDashboard.cs",
+              "RelativeToolTip": "MainDashboard.cs",
+              "ViewState": "AgIAAFMAAAAAAAAAAAAAAGIAAAA3AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-10T07:36:10.185Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "AnalyzerConfig.cs",
+              "DocumentMoniker": "D:\\project\\C#\\AshkanAQMS\\Models\\AnalyzerConfig.cs",
+              "RelativeDocumentMoniker": "Models\\AnalyzerConfig.cs",
+              "ToolTip": "D:\\project\\C#\\AshkanAQMS\\Models\\AnalyzerConfig.cs",
+              "RelativeToolTip": "Models\\AnalyzerConfig.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-10T16:54:05.606Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "MainDashboard.Designer.cs",
+              "DocumentMoniker": "D:\\project\\C#\\AshkanAQMS\\MainDashboard.Designer.cs",
+              "RelativeDocumentMoniker": "MainDashboard.Designer.cs",
+              "ToolTip": "D:\\project\\C#\\AshkanAQMS\\MainDashboard.Designer.cs",
+              "RelativeToolTip": "MainDashboard.Designer.cs",
+              "ViewState": "AgIAAJ8AAAAAAAAAAAAAAMEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-10T12:49:20.295Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "App.config",
+              "DocumentMoniker": "D:\\project\\C#\\AshkanAQMS\\App.config",
+              "RelativeDocumentMoniker": "App.config",
+              "ToolTip": "D:\\project\\C#\\AshkanAQMS\\App.config",
+              "RelativeToolTip": "App.config",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2026-07-10T07:42:30.741Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "AnalyzerManagementControl.cs [Design]",
+              "DocumentMoniker": "D:\\project\\C#\\AshkanAQMS\\AnalyzerManagementControl.cs",
+              "RelativeDocumentMoniker": "AnalyzerManagementControl.cs",
+              "ToolTip": "D:\\project\\C#\\AshkanAQMS\\AnalyzerManagementControl.cs [Design]",
+              "RelativeToolTip": "AnalyzerManagementControl.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-10T07:28:39.579Z",
+              "EditorCaption": " [Design]"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
