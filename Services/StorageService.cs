@@ -1,41 +1,79 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Web.Script.Serialization; // استفاده از این به جای JSON.NET برای سازگاری بیشتر در WinForms قدیمی
+using System.Xml.Serialization;
 using AshkanAQMS.Models;
 
 namespace AshkanAQMS.Services
 {
     public static class StorageService
     {
-        private static readonly string ConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "analyzers_config.json");
+        private const string StorageFolderName = "AshkanAQMS";
+        private const string StorageFileName = "analyzers.xml";
 
-        public static void SaveAnalyzers(List<AnalyzerConfig> analyzers)
-        {
-            try
-            {
-                var serializer = new JavaScriptSerializer();
-                string json = serializer.Serialize(analyzers);
-                File.WriteAllText(ConfigPath, json);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("Save Error: " + ex.Message);
-            }
-        }
+        private static readonly string StorageDirectory =
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), StorageFolderName);
+
+        private static readonly string StoragePath =
+            Path.Combine(StorageDirectory, StorageFileName);
 
         public static List<AnalyzerConfig> LoadAnalyzers()
         {
-            if (!File.Exists(ConfigPath)) return new List<AnalyzerConfig>();
             try
             {
-                string json = File.ReadAllText(ConfigPath);
-                var serializer = new JavaScriptSerializer();
-                return serializer.Deserialize<List<AnalyzerConfig>>(json) ?? new List<AnalyzerConfig>();
+                if (!File.Exists(StoragePath))
+                {
+                    return new List<AnalyzerConfig>();
+                }
+
+                XmlSerializer serializer = new XmlSerializer(typeof(List<AnalyzerConfig>));
+
+                using (FileStream stream = File.Open(StoragePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    object result = serializer.Deserialize(stream);
+                    return result as List<AnalyzerConfig> ?? new List<AnalyzerConfig>();
+                }
             }
             catch
             {
                 return new List<AnalyzerConfig>();
+            }
+        }
+
+        public static void SaveAnalyzers(List<AnalyzerConfig> analyzers)
+        {
+            if (analyzers == null)
+            {
+                analyzers = new List<AnalyzerConfig>();
+            }
+
+            try
+            {
+                EnsureStorageDirectory();
+
+                XmlSerializer serializer = new XmlSerializer(typeof(List<AnalyzerConfig>));
+
+                using (FileStream stream = File.Create(StoragePath))
+                {
+                    serializer.Serialize(stream, analyzers);
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public static string GetStoragePath()
+        {
+            return StoragePath;
+        }
+
+        private static void EnsureStorageDirectory()
+        {
+            if (!Directory.Exists(StorageDirectory))
+            {
+                Directory.CreateDirectory(StorageDirectory);
             }
         }
     }

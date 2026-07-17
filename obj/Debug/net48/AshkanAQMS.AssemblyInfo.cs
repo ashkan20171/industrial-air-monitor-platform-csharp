@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AshkanAQMS")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9c99e5690b4358b59ddf71fd5a346b049f5ff0db")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+477c1f368fcbed637903e0752982f94c51e15c55")]
 [assembly: System.Reflection.AssemblyProductAttribute("AshkanAQMS")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AshkanAQMS")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
