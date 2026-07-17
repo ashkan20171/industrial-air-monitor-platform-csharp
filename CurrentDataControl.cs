@@ -38,6 +38,11 @@ namespace AshkanAQMS
 
         private void SetupTimer()
         {
+            if (components == null)
+            {
+                components = new System.ComponentModel.Container();
+            }
+
             _updateTimer = new Timer(components);
             _updateTimer.Interval = 2000;
             _updateTimer.Tick += OnTimerTick;
@@ -411,7 +416,7 @@ namespace AshkanAQMS
             PointF[] points = new PointF[_history.Count];
 
             float xStep = _history.Count > 1
-                ? (float)plotArea.Width / (float)(_history.Count - 1)
+                ? (float)plotArea.Width / (_history.Count - 1)
                 : plotArea.Width;
 
             for (int i = 0; i < _history.Count; i++)
