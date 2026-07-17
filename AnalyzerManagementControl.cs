@@ -5,7 +5,7 @@ using System.IO.Ports;
 using System.Net.Sockets;
 using System.Windows.Forms;
 using AshkanAQMS.Models;
-using AshkanAQMS.Services; // اضافه شد
+using AshkanAQMS.Services;
 
 namespace AshkanAQMS
 {
@@ -17,40 +17,109 @@ namespace AshkanAQMS
         {
             InitializeComponent();
             ApplyColors();
-            LoadData(); // تغییر از LoadMockData به LoadData
+            LoadAnalyzers();
             RefreshGrid();
         }
 
         private void ApplyColors()
         {
-            pnlHeader.BackColor = Color.White;
+            pnlHeader.BackColor = Color.FromArgb(41, 128, 185);
+            lblTitle.ForeColor = Color.White;
+
+            btnAdd.BackColor = Color.FromArgb(39, 174, 96);
+            btnAdd.ForeColor = Color.White;
+
+            btnEdit.BackColor = Color.FromArgb(241, 196, 15);
+            btnEdit.ForeColor = Color.White;
+
+            btnDelete.BackColor = Color.FromArgb(231, 76, 60);
+            btnDelete.ForeColor = Color.White;
+
+            btnTestConnection.BackColor = Color.FromArgb(52, 152, 219);
+            btnTestConnection.ForeColor = Color.White;
+
+            lblDiagnosticStatus.ForeColor = Color.DimGray;
         }
 
-        private void LoadData()
+        private void LoadAnalyzers()
         {
-            // تلاش برای بارگذاری از فایل ذخیره شده
-            _analyzers = StorageService.LoadAnalyzers();
-
-            // اگر فایلی وجود نداشت، دیتای اولیه را بساز
-            if (_analyzers == null || _analyzers.Count == 0)
+            try
             {
-                _analyzers = new List<AnalyzerConfig>
+                _analyzers = StorageService.LoadAnalyzers();
+
+                if (_analyzers == null)
                 {
-                    new AnalyzerConfig { Name = "PM2.5 Primary Analyzer", Model = "Thermo 5012", GasType = "PM2.5", ConnectionType = "COM", ComPort = "COM1", BaudRate = 9600 },
-                    new AnalyzerConfig { Name = "Stack CO2 Analyzer", Model = "Siemens Ultramat", GasType = "CO2", ConnectionType = "IP", IpAddress = "192.168.1.110", IpPort = 502 }
-                };
+                    _analyzers = new List<AnalyzerConfig>();
+                }
+
+                if (_analyzers.Count == 0)
+                {
+                    LoadDefaultAnalyzers();
+                    SaveAnalyzers();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Failed to load analyzers.\n\n" + ex.Message,
+                    "Load Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                _analyzers = new List<AnalyzerConfig>();
+                LoadDefaultAnalyzers();
+            }
+        }
+
+        private void LoadDefaultAnalyzers()
+        {
+            _analyzers.Add(new AnalyzerConfig
+            {
+                Name = "PM2.5 Primary Analyzer",
+                Model = "Thermo 5012",
+                GasType = "PM2.5",
+                ConnectionType = "COM",
+                ComPort = "COM1",
+                BaudRate = 9600
+            });
+
+            _analyzers.Add(new AnalyzerConfig
+            {
+                Name = "Stack CO2 Analyzer",
+                Model = "Siemens Ultramat",
+                GasType = "CO2",
+                ConnectionType = "IP",
+                IpAddress = "192.168.1.110",
+                IpPort = 502
+            });
+        }
+
+        private void SaveAnalyzers()
+        {
+            try
+            {
                 StorageService.SaveAnalyzers(_analyzers);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Failed to save analyzers.\n\n" + ex.Message,
+                    "Save Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
         }
 
         private void RefreshGrid()
         {
             dgvAnalyzers.Rows.Clear();
+
             foreach (var analyzer in _analyzers)
             {
-                string connectionDetails = analyzer.ConnectionType == "COM"
-                    ? $"{analyzer.ComPort} ({analyzer.BaudRate} bps)"
-                    : $"{analyzer.IpAddress}:{analyzer.IpPort}";
+                string connectionDetails =
+                    analyzer.ConnectionType == "COM"
+                        ? $"{analyzer.ComPort} ({analyzer.BaudRate} bps)"
+                        : $"{analyzer.IpAddress}:{analyzer.IpPort}";
 
                 dgvAnalyzers.Rows.Add(
                     analyzer.Id,
@@ -58,8 +127,7 @@ namespace AshkanAQMS
                     analyzer.Model,
                     analyzer.GasType,
                     analyzer.Unit,
-                    connectionDetails
-                );
+                    connectionDetails);
             }
         }
 
@@ -70,8 +138,10 @@ namespace AshkanAQMS
                 if (form.ShowDialog() == DialogResult.OK)
                 {
                     _analyzers.Add(form.Configuration);
-                    StorageService.SaveAnalyzers(_analyzers); // ذخیره دائمی
+                    SaveAnalyzers();
                     RefreshGrid();
+                    lblDiagnosticStatus.Text = "Analyzer added successfully.";
+                    lblDiagnosticStatus.ForeColor = Color.FromArgb(39, 174, 96);
                 }
             }
         }
@@ -83,14 +153,25 @@ namespace AshkanAQMS
 
         private void dgvAnalyzers_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0) EditSelectedAnalyzer();
+            if (e.RowIndex >= 0)
+            {
+                EditSelectedAnalyzer();
+            }
         }
 
         private void EditSelectedAnalyzer()
         {
-            if (dgvAnalyzers.CurrentRow == null) return;
+            if (dgvAnalyzers.CurrentRow == null)
+            {
+                return;
+            }
 
             string id = dgvAnalyzers.CurrentRow.Cells["colId"].Value?.ToString();
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return;
+            }
+
             var target = _analyzers.Find(a => a.Id == id);
 
             if (target != null)
@@ -99,8 +180,10 @@ namespace AshkanAQMS
                 {
                     if (form.ShowDialog() == DialogResult.OK)
                     {
-                        StorageService.SaveAnalyzers(_analyzers); // ذخیره تغییرات
+                        SaveAnalyzers();
                         RefreshGrid();
+                        lblDiagnosticStatus.Text = "Analyzer updated successfully.";
+                        lblDiagnosticStatus.ForeColor = Color.FromArgb(39, 174, 96);
                     }
                 }
             }
@@ -108,71 +191,139 @@ namespace AshkanAQMS
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            if (dgvAnalyzers.CurrentRow == null) return;
+            if (dgvAnalyzers.CurrentRow == null)
+            {
+                return;
+            }
 
             string id = dgvAnalyzers.CurrentRow.Cells["colId"].Value?.ToString();
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return;
+            }
+
             var target = _analyzers.Find(a => a.Id == id);
 
             if (target != null)
             {
-                var confirm = MessageBox.Show($"Are you sure you want to delete {target.Name}?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                var confirm = MessageBox.Show(
+                    $"Are you sure you want to delete {target.Name}?",
+                    "Confirm Delete",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
                 if (confirm == DialogResult.Yes)
                 {
                     _analyzers.Remove(target);
-                    StorageService.SaveAnalyzers(_analyzers); // ذخیره بعد از حذف
+                    SaveAnalyzers();
                     RefreshGrid();
+                    lblDiagnosticStatus.Text = "Analyzer deleted successfully.";
+                    lblDiagnosticStatus.ForeColor = Color.FromArgb(231, 76, 60);
                 }
             }
         }
 
-        // بخش تست اتصال (بدون تغییر اما آماده برای توسعه)
         private void btnTestConnection_Click(object sender, EventArgs e)
         {
-            if (dgvAnalyzers.CurrentRow == null) return;
+            if (dgvAnalyzers.CurrentRow == null)
+            {
+                MessageBox.Show(
+                    "Please select an analyzer first.",
+                    "Test Connection",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                return;
+            }
+
             string id = dgvAnalyzers.CurrentRow.Cells["colId"].Value?.ToString();
             var target = _analyzers.Find(a => a.Id == id);
 
-            if (target != null)
+            if (target == null)
             {
-                lblDiagnosticStatus.Text = $"Testing {target.Name}...";
-                lblDiagnosticStatus.ForeColor = Color.DarkOrange;
-                Application.DoEvents();
+                return;
+            }
 
-                bool isSuccess = target.ConnectionType == "COM"
-                    ? TestSerialPort(target.ComPort, target.BaudRate, out string err)
-                    : TestNetworkConnection(target.IpAddress, target.IpPort, out err);
+            bool isSuccess;
+            string errorMessage;
 
-                lblDiagnosticStatus.Text = isSuccess ? "Success!" : $"Failed: {err}";
-                lblDiagnosticStatus.ForeColor = isSuccess ? Color.ForestGreen : Color.Crimson;
+            if (target.ConnectionType == "COM")
+            {
+                isSuccess = TestSerialPort(target.ComPort, target.BaudRate, out errorMessage);
+            }
+            else
+            {
+                isSuccess = TestNetworkConnection(target.IpAddress, target.IpPort, out errorMessage);
+            }
+
+            if (isSuccess)
+            {
+                lblDiagnosticStatus.Text = "Connection successful.";
+                lblDiagnosticStatus.ForeColor = Color.FromArgb(39, 174, 96);
+                MessageBox.Show(
+                    "Connection test was successful.",
+                    "Test Connection",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            else
+            {
+                lblDiagnosticStatus.Text = "Connection failed.";
+                lblDiagnosticStatus.ForeColor = Color.FromArgb(231, 76, 60);
+                MessageBox.Show(
+                    errorMessage,
+                    "Test Connection Failed",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
             }
         }
 
-        private bool TestSerialPort(string portName, int baudRate, out string error)
+        private bool TestSerialPort(string portName, int baudRate, out string errorMessage)
         {
-            error = "";
+            errorMessage = string.Empty;
+
             try
             {
-                using (var p = new SerialPort(portName, baudRate))
+                using (SerialPort port = new SerialPort(portName, baudRate, Parity.None, 8, StopBits.One))
                 {
-                    p.Open(); p.Close(); return true;
+                    port.Open();
+                    port.Close();
                 }
+
+                return true;
             }
-            catch (Exception ex) { error = ex.Message; return false; }
+            catch (Exception ex)
+            {
+                errorMessage = "Serial port test failed: " + ex.Message;
+                return false;
+            }
         }
 
-        private bool TestNetworkConnection(string ip, int port, out string error)
+        private bool TestNetworkConnection(string ipAddress, int port, out string errorMessage)
         {
-            error = "";
+            errorMessage = string.Empty;
+
             try
             {
-                using (var client = new TcpClient())
+                using (TcpClient client = new TcpClient())
                 {
-                    var res = client.BeginConnect(ip, port, null, null);
-                    if (!res.AsyncWaitHandle.WaitOne(2000)) { error = "Timeout"; return false; }
-                    client.EndConnect(res); return true;
+                    IAsyncResult result = client.BeginConnect(ipAddress, port, null, null);
+                    bool success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(2));
+
+                    if (!success)
+                    {
+                        errorMessage = "Network connection timed out.";
+                        return false;
+                    }
+
+                    client.EndConnect(result);
+                    return true;
                 }
             }
-            catch (Exception ex) { error = ex.Message; return false; }
+            catch (Exception ex)
+            {
+                errorMessage = "Network connection failed: " + ex.Message;
+                return false;
+            }
         }
     }
 }

@@ -7,12 +7,24 @@
       "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:currentdatacontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|d:\\project\\c#\\ashkanaqms\\currentdatacontrol.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:currentdatacontrol.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|d:\\project\\c#\\ashkanaqms\\analyzerconfigform.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:analyzerconfigform.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|d:\\project\\c#\\ashkanaqms\\analyzerconfigform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:analyzerconfigform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|d:\\project\\c#\\ashkanaqms\\analyzermanagementcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:analyzermanagementcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|d:\\project\\c#\\ashkanaqms\\services\\storageservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:services\\storageservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|d:\\project\\c#\\ashkanaqms\\currentdatacontrol.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:currentdatacontrol.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -22,8 +34,47 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 3,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "AnalyzerConfigForm.Designer.cs",
+              "DocumentMoniker": "D:\\project\\C#\\AshkanAQMS\\AnalyzerConfigForm.Designer.cs",
+              "RelativeDocumentMoniker": "AnalyzerConfigForm.Designer.cs",
+              "ToolTip": "D:\\project\\C#\\AshkanAQMS\\AnalyzerConfigForm.Designer.cs",
+              "RelativeToolTip": "AnalyzerConfigForm.Designer.cs",
+              "ViewState": "AgIAALcBAAAAAAAAAADwv8IBAAA5AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-17T17:13:09.597Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AnalyzerConfigForm.cs",
+              "DocumentMoniker": "D:\\project\\C#\\AshkanAQMS\\AnalyzerConfigForm.cs",
+              "RelativeDocumentMoniker": "AnalyzerConfigForm.cs",
+              "ToolTip": "D:\\project\\C#\\AshkanAQMS\\AnalyzerConfigForm.cs",
+              "RelativeToolTip": "AnalyzerConfigForm.cs",
+              "ViewState": "AgIAAF4AAAAAAAAAAADwv4EAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-17T17:12:48.979Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "StorageService.cs",
+              "DocumentMoniker": "D:\\project\\C#\\AshkanAQMS\\Services\\StorageService.cs",
+              "RelativeDocumentMoniker": "Services\\StorageService.cs",
+              "ToolTip": "D:\\project\\C#\\AshkanAQMS\\Services\\StorageService.cs",
+              "RelativeToolTip": "Services\\StorageService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAA6AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-17T16:51:42.042Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
@@ -32,26 +83,27 @@
               "RelativeDocumentMoniker": "CurrentDataControl.cs",
               "ToolTip": "D:\\project\\C#\\AshkanAQMS\\CurrentDataControl.cs",
               "RelativeToolTip": "CurrentDataControl.cs",
-              "ViewState": "AgIAALkBAAAAAAAAAAAAwNUBAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAB0AAAAAAAAAAAAawCgAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-07-17T14:34:39.601Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "AnalyzerManagementControl.cs",
               "DocumentMoniker": "D:\\project\\C#\\AshkanAQMS\\AnalyzerManagementControl.cs",
               "RelativeDocumentMoniker": "AnalyzerManagementControl.cs",
               "ToolTip": "D:\\project\\C#\\AshkanAQMS\\AnalyzerManagementControl.cs",
               "RelativeToolTip": "AnalyzerManagementControl.cs",
-              "ViewState": "AgIAAIkAAAAAAAAAAADwv7IAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAACYBAAAAAAAAAADwv0kBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-17T14:32:44.864Z"
+              "WhenOpened": "2026-07-17T14:32:44.864Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 5,
               "Title": "CurrentDataControl.Designer.cs",
               "DocumentMoniker": "D:\\project\\C#\\AshkanAQMS\\CurrentDataControl.Designer.cs",
               "RelativeDocumentMoniker": "CurrentDataControl.Designer.cs",
