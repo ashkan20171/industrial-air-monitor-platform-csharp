@@ -11,3 +11,16 @@ D:\project\C#\AshkanAQMS\obj\Debug\net48\AshkanAQMS.csproj.CoreCompileInputs.cac
 D:\project\C#\AshkanAQMS\obj\Debug\net48\AshkanAQMS.sourcelink.json
 D:\project\C#\AshkanAQMS\obj\Debug\net48\AshkanAQMS.exe
 D:\project\C#\AshkanAQMS\obj\Debug\net48\AshkanAQMS.pdb
+F:\project\C#\AshkanAQMS\bin\Debug\net48\AshkanAQMS.exe.config
+F:\project\C#\AshkanAQMS\bin\Debug\net48\AshkanAQMS.exe
+F:\project\C#\AshkanAQMS\bin\Debug\net48\AshkanAQMS.pdb
+F:\project\C#\AshkanAQMS\obj\Debug\net48\AshkanAQMS.csproj.AssemblyReference.cache
+F:\project\C#\AshkanAQMS\obj\Debug\net48\AshkanAQMS.MainDashboard.resources
+F:\project\C#\AshkanAQMS\obj\Debug\net48\AshkanAQMS.csproj.GenerateResource.cache
+F:\project\C#\AshkanAQMS\obj\Debug\net48\AshkanAQMS.GeneratedMSBuildEditorConfig.editorconfig
+F:\project\C#\AshkanAQMS\obj\Debug\net48\AshkanAQMS.AssemblyInfoInputs.cache
+F:\project\C#\AshkanAQMS\obj\Debug\net48\AshkanAQMS.AssemblyInfo.cs
+F:\project\C#\AshkanAQMS\obj\Debug\net48\AshkanAQMS.csproj.CoreCompileInputs.cache
+F:\project\C#\AshkanAQMS\obj\Debug\net48\AshkanAQMS.sourcelink.json
+F:\project\C#\AshkanAQMS\obj\Debug\net48\AshkanAQMS.exe
+F:\project\C#\AshkanAQMS\obj\Debug\net48\AshkanAQMS.pdb

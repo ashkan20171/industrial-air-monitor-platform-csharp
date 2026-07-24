@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\project\\C#\\AshkanAQMS\\AshkanAQMS.csproj": {}
+    "F:\\project\\C#\\AshkanAQMS\\AshkanAQMS.csproj": {}
   },
   "projects": {
-    "D:\\project\\C#\\AshkanAQMS\\AshkanAQMS.csproj": {
+    "F:\\project\\C#\\AshkanAQMS\\AshkanAQMS.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\project\\C#\\AshkanAQMS\\AshkanAQMS.csproj",
+        "projectUniqueName": "F:\\project\\C#\\AshkanAQMS\\AshkanAQMS.csproj",
         "projectName": "AshkanAQMS",
-        "projectPath": "D:\\project\\C#\\AshkanAQMS\\AshkanAQMS.csproj",
-        "packagesPath": "C:\\Users\\ashkan\\.nuget\\packages\\",
-        "outputPath": "D:\\project\\C#\\AshkanAQMS\\obj\\",
+        "projectPath": "F:\\project\\C#\\AshkanAQMS\\AshkanAQMS.csproj",
+        "packagesPath": "C:\\Users\\ashkan2025\\.nuget\\packages\\",
+        "outputPath": "F:\\project\\C#\\AshkanAQMS\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "D:\\86\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "E:\\86\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\ashkan\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\ashkan2025\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -52,7 +52,7 @@
         "net48": {
           "framework": "net48",
           "targetAlias": "net48",
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.302\\RuntimeIdentifierGraph.json"
         }
       },
       "runtimes": {

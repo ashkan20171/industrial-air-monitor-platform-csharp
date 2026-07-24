@@ -5,10 +5,13 @@
     <Compile Update="AnalyzerConfigForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="AnalyzerManagementControl.cs">
+    <Compile Update="Controls\AnalyzerManagementControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="CurrentDataControl.cs">
+    <Compile Update="Controls\CurrentDataControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Controls\ReportsControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="MainDashboard.cs">
