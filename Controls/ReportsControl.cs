@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,6 +15,7 @@ namespace AshkanAQMS.Controls
     public partial class ReportsControl : UserControl
     {
         private readonly DbService _dbService;
+        private readonly BindingSource _bindingSource;
         private List<SensorLog> _currentLogs;
 
         public ReportsControl()
@@ -20,163 +23,50 @@ namespace AshkanAQMS.Controls
             InitializeComponent();
 
             _dbService = new DbService();
+            _bindingSource = new BindingSource();
             _currentLogs = new List<SensorLog>();
 
             Load += ReportsControl_Load;
+            dgvReport.DataBindingComplete += dgvReport_DataBindingComplete;
         }
 
         private void ReportsControl_Load(object sender, EventArgs e)
         {
-            ConfigureGrid();
-
+            dtpFrom.Value = DateTime.Now.Date.AddDays(-7);
             dtpTo.Value = DateTime.Now;
-            dtpFrom.Value = DateTime.Now.AddDays(-1);
 
-            LoadReport();
+            ConfigureGrid();
+            RefreshReport();
         }
 
         private void ConfigureGrid()
         {
             dgvReport.AutoGenerateColumns = false;
+            dgvReport.ReadOnly = true;
             dgvReport.AllowUserToAddRows = false;
             dgvReport.AllowUserToDeleteRows = false;
-            dgvReport.ReadOnly = true;
             dgvReport.MultiSelect = false;
             dgvReport.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvReport.RowHeadersVisible = false;
-            dgvReport.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dgvReport.BackgroundColor = Color.White;
-            dgvReport.BorderStyle = BorderStyle.None;
-
-            dgvReport.Columns.Clear();
-
-            var colTimestamp = new DataGridViewTextBoxColumn
-            {
-                Name = "colTimestamp",
-                HeaderText = "Timestamp",
-                DataPropertyName = "Timestamp",
-                FillWeight = 170,
-                DefaultCellStyle = { Format = "yyyy-MM-dd HH:mm:ss" }
-            };
-
-            var colAnalyzerId = new DataGridViewTextBoxColumn
-            {
-                Name = "colAnalyzerId",
-                HeaderText = "Analyzer ID",
-                DataPropertyName = "AnalyzerId",
-                FillWeight = 110
-            };
-
-            var colPm25 = new DataGridViewTextBoxColumn
-            {
-                Name = "colPm25",
-                HeaderText = "PM2.5",
-                DataPropertyName = "PM25",
-                FillWeight = 80,
-                DefaultCellStyle = { Format = "N1" }
-            };
-
-            var colCo2 = new DataGridViewTextBoxColumn
-            {
-                Name = "colCo2",
-                HeaderText = "CO2",
-                DataPropertyName = "CO2",
-                FillWeight = 80,
-                DefaultCellStyle = { Format = "N0" }
-            };
-
-            var colAqi = new DataGridViewTextBoxColumn
-            {
-                Name = "colAqi",
-                HeaderText = "AQI",
-                DataPropertyName = "AQI",
-                FillWeight = 70,
-                DefaultCellStyle = { Format = "N0" }
-            };
-
-            var colStatus = new DataGridViewTextBoxColumn
-            {
-                Name = "colStatus",
-                HeaderText = "Status",
-                DataPropertyName = "Status",
-                FillWeight = 140
-            };
-
-            dgvReport.Columns.AddRange(
-                colTimestamp,
-                colAnalyzerId,
-                colPm25,
-                colCo2,
-                colAqi,
-                colStatus
-            );
+            dgvReport.DataSource = _bindingSource;
         }
 
         private void btnGenerateReport_Click(object sender, EventArgs e)
         {
-            LoadReport();
-        }
-
-        private void LoadReport()
-        {
-            try
-            {
-                DateTime from = dtpFrom.Value;
-                DateTime to = dtpTo.Value;
-
-                if (from > to)
-                {
-                    MessageBox.Show("The 'From' date cannot be greater than the 'To' date.",
-                        "Invalid Date Range",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-                    return;
-                }
-
-                _currentLogs = _dbService.GetLogs(from, to);
-
-                dgvReport.DataSource = null;
-                dgvReport.DataSource = _currentLogs;
-
-                UpdateSummary(_currentLogs);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Failed to load report.\n{ex.Message}",
-                    "Report Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
-        }
-
-        private void UpdateSummary(List<SensorLog> logs)
-        {
-            int total = logs.Count;
-
-            lblTotalLogs.Text = $"Total Logs: {total}";
-
-            if (total == 0)
-            {
-                lblAvgAqi.Text = "Average AQI: N/A";
-                lblMaxAqi.Text = "Max AQI: N/A";
-                lblMinAqi.Text = "Min AQI: N/A";
-                return;
-            }
-
-            double avgAqi = logs.Average(x => x.AQI);
-            double maxAqi = logs.Max(x => x.AQI);
-            double minAqi = logs.Min(x => x.AQI);
-
-            lblAvgAqi.Text = $"Average AQI: {avgAqi:N1}";
-            lblMaxAqi.Text = $"Max AQI: {maxAqi:N0}";
-            lblMinAqi.Text = $"Min AQI: {minAqi:N0}";
+            RefreshReport();
         }
 
         private void btnExportCsv_Click(object sender, EventArgs e)
         {
             if (_currentLogs == null || _currentLogs.Count == 0)
             {
-                MessageBox.Show("There is no filtered report data to export.",
+                RefreshReport();
+            }
+
+            if (_currentLogs == null || _currentLogs.Count == 0)
+            {
+                MessageBox.Show(
+                    "There is no report data to export.",
                     "Export",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
@@ -185,42 +75,156 @@ namespace AshkanAQMS.Controls
 
             using (var dialog = new SaveFileDialog())
             {
-                dialog.Title = "Export Report";
+                dialog.Title = "Export Report to CSV";
                 dialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
-                dialog.FileName = $"report_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+                dialog.FileName = $"AQMS_Report_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
 
-                if (dialog.ShowDialog() == DialogResult.OK)
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                    return;
+
+                try
                 {
-                    try
-                    {
-                        ExportReportToCsv(dialog.FileName);
-                        MessageBox.Show("Report exported successfully.",
-                            "Export",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Information);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Failed to export report.\n{ex.Message}",
-                            "Export Error",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Error);
-                    }
+                    ExportCurrentReport(dialog.FileName);
+                    MessageBox.Show(
+                        "CSV export completed successfully.",
+                        "Export",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        $"Export failed:\n{ex.Message}",
+                        "Export Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                 }
             }
         }
 
-        private void ExportReportToCsv(string filePath)
+        private void RefreshReport()
         {
-            var sb = new StringBuilder();
-            sb.AppendLine("Timestamp,AnalyzerId,PM25,CO2,AQI,Status");
+            var from = dtpFrom.Value;
+            var to = dtpTo.Value;
 
-            foreach (var log in _currentLogs.OrderBy(x => x.Timestamp))
+            if (from > to)
             {
-                sb.AppendLine(log.ToCsvLine());
+                MessageBox.Show(
+                    "From date must be less than or equal to To date.",
+                    "Invalid Range",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
             }
 
-            File.WriteAllText(filePath, sb.ToString(), Encoding.UTF8);
+            _currentLogs = _dbService.GetLogs(from, to)
+                                     .OrderBy(x => x.Timestamp)
+                                     .ToList();
+
+            _bindingSource.DataSource = new BindingList<SensorLog>(_currentLogs);
+
+            UpdateSummary();
+            ApplyEmptyStateIfNeeded();
+        }
+
+        private void UpdateSummary()
+        {
+            if (_currentLogs.Count == 0)
+            {
+                lblTotalLogs.Text = "Total Logs: 0";
+                lblAvgAqi.Text = "Average AQI: -";
+                lblMaxAqi.Text = "Max AQI: -";
+                lblMinAqi.Text = "Min AQI: -";
+                return;
+            }
+
+            var total = _currentLogs.Count;
+            var avg = _currentLogs.Average(x => x.AQI);
+            var max = _currentLogs.Max(x => x.AQI);
+            var min = _currentLogs.Min(x => x.AQI);
+
+            lblTotalLogs.Text = $"Total Logs: {total}";
+            lblAvgAqi.Text = $"Average AQI: {avg:0.0}";
+            lblMaxAqi.Text = $"Max AQI: {max:0.0}";
+            lblMinAqi.Text = $"Min AQI: {min:0.0}";
+        }
+
+        private void ApplyEmptyStateIfNeeded()
+        {
+            if (_currentLogs.Count == 0)
+            {
+                dgvReport.Columns["colTimestamp"].DefaultCellStyle.BackColor = Color.White;
+            }
+        }
+
+        private void dgvReport_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            foreach (DataGridViewRow row in dgvReport.Rows)
+            {
+                if (row.DataBoundItem is SensorLog log)
+                {
+                    ApplyAqiRowStyle(row, log.AQI);
+                }
+            }
+        }
+
+        private void ApplyAqiRowStyle(DataGridViewRow row, double aqi)
+        {
+            if (aqi <= 50)
+            {
+                row.DefaultCellStyle.BackColor = Color.FromArgb(232, 245, 233);
+            }
+            else if (aqi <= 100)
+            {
+                row.DefaultCellStyle.BackColor = Color.FromArgb(255, 249, 196);
+            }
+            else if (aqi <= 150)
+            {
+                row.DefaultCellStyle.BackColor = Color.FromArgb(255, 224, 178);
+            }
+            else if (aqi <= 200)
+            {
+                row.DefaultCellStyle.BackColor = Color.FromArgb(255, 205, 210);
+            }
+            else if (aqi <= 300)
+            {
+                row.DefaultCellStyle.BackColor = Color.FromArgb(225, 190, 231);
+            }
+            else
+            {
+                row.DefaultCellStyle.BackColor = Color.FromArgb(238, 238, 238);
+            }
+
+            row.DefaultCellStyle.ForeColor = Color.Black;
+        }
+
+        private void ExportCurrentReport(string filePath)
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine("Timestamp,AnalyzerId,PM25,CO2,AQI,Status");
+
+            foreach (var item in _currentLogs.OrderBy(x => x.Timestamp))
+            {
+                sb.AppendLine(string.Join(",",
+                    Csv(item.Timestamp.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)),
+                    Csv(item.AnalyzerId),
+                    Csv(item.PM25.ToString("0.0", CultureInfo.InvariantCulture)),
+                    Csv(item.CO2.ToString("0.0", CultureInfo.InvariantCulture)),
+                    Csv(item.AQI.ToString("0.0", CultureInfo.InvariantCulture)),
+                    Csv(item.Status)
+                ));
+            }
+
+            File.WriteAllText(filePath, sb.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+        }
+
+        private string Csv(string value)
+        {
+            if (value == null)
+                return "\"\"";
+
+            return "\"" + value.Replace("\"", "\"\"") + "\"";
         }
     }
 }

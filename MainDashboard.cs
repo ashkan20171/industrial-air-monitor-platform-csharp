@@ -96,7 +96,8 @@ namespace AshkanAQMS
         private void ShowReportsPage()
         {
             SetActiveButton(btnReports);
-            LoadPage(CreatePlaceholderPage("Reports"));
+            LoadPage(new AshkanAQMS.Controls.ReportsControl());
+
         }
 
         private void ShowSettingsPage()

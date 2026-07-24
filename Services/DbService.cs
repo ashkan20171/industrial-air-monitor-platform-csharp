@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -7,126 +8,131 @@ using AshkanAQMS.Models;
 
 namespace AshkanAQMS.Services
 {
-    public class DbService
+    internal class DbService
     {
-        private readonly string _dataDirectory;
-        private readonly string _logFilePath;
-        private readonly object _syncRoot = new object();
+        private static readonly object SyncRoot = new object();
 
-        public DbService()
-        {
-            _dataDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data");
-            _logFilePath = Path.Combine(_dataDirectory, "sensor_logs.csv");
-            EnsureStorage();
-        }
+        private const string StorageFolderName = "AshkanAQMS";
+        private const string StorageFileName = "sensor_logs.csv";
 
-        public string LogFilePath => _logFilePath;
+        private static readonly string StorageDirectory =
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), StorageFolderName);
+
+        private static readonly string StoragePath =
+            Path.Combine(StorageDirectory, StorageFileName);
+
+        private const string CsvHeader = "Timestamp,AnalyzerId,PM25,CO2,AQI,Status";
 
         public void SaveLog(SensorLog log)
         {
             if (log == null)
                 return;
 
-            EnsureStorage();
-
-            lock (_syncRoot)
+            lock (SyncRoot)
             {
-                bool writeHeader = !File.Exists(_logFilePath) || new FileInfo(_logFilePath).Length == 0;
+                EnsureStorageFile();
 
-                using (var writer = new StreamWriter(_logFilePath, true, Encoding.UTF8))
-                {
-                    if (writeHeader)
-                    {
-                        writer.WriteLine("Timestamp,AnalyzerId,PM25,CO2,AQI,Status");
-                    }
-
-                    writer.WriteLine(log.ToCsvLine());
-                }
-            }
-        }
-
-        public void SaveLogs(IEnumerable<SensorLog> logs)
-        {
-            if (logs == null)
-                return;
-
-            foreach (var log in logs)
-            {
-                SaveLog(log);
+                File.AppendAllText(
+                    StoragePath,
+                    log.ToCsvLine() + Environment.NewLine,
+                    new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             }
         }
 
         public List<SensorLog> GetAllLogs()
         {
-            EnsureStorage();
-
-            lock (_syncRoot)
+            lock (SyncRoot)
             {
-                if (!File.Exists(_logFilePath))
-                    return new List<SensorLog>();
-
-                var lines = File.ReadAllLines(_logFilePath, Encoding.UTF8);
-
-                if (lines.Length == 0)
-                    return new List<SensorLog>();
+                EnsureStorageFile();
 
                 var result = new List<SensorLog>();
 
-                foreach (var line in lines.Skip(1))
+                string[] lines;
+                try
                 {
-                    if (string.IsNullOrWhiteSpace(line))
+                    lines = File.ReadAllLines(StoragePath, Encoding.UTF8);
+                }
+                catch
+                {
+                    return result;
+                }
+
+                foreach (var rawLine in lines)
+                {
+                    if (string.IsNullOrWhiteSpace(rawLine))
+                        continue;
+
+                    var line = rawLine.Trim();
+
+                    if (line.StartsWith("Timestamp,", StringComparison.OrdinalIgnoreCase))
                         continue;
 
                     try
                     {
-                        var log = SensorLog.FromCsvLine(line);
-                        if (log != null)
-                            result.Add(log);
+                        result.Add(SensorLog.FromCsvLine(line));
                     }
                     catch
                     {
-                        // Skip invalid rows
+                        // Skip malformed lines but keep the rest of the file usable.
                     }
                 }
 
-                return result.OrderBy(x => x.Timestamp).ToList();
+                return result;
             }
         }
 
         public List<SensorLog> GetLogs(DateTime from, DateTime to)
         {
-            var allLogs = GetAllLogs();
+            if (from > to)
+            {
+                var temp = from;
+                from = to;
+                to = temp;
+            }
 
-            return allLogs
+            return GetAllLogs()
                 .Where(x => x.Timestamp >= from && x.Timestamp <= to)
-                .OrderByDescending(x => x.Timestamp)
+                .OrderBy(x => x.Timestamp)
                 .ToList();
         }
 
         public void ClearAllLogs()
         {
-            EnsureStorage();
-
-            lock (_syncRoot)
+            lock (SyncRoot)
             {
-                using (var writer = new StreamWriter(_logFilePath, false, Encoding.UTF8))
-                {
-                    writer.WriteLine("Timestamp,AnalyzerId,PM25,CO2,AQI,Status");
-                }
+                EnsureStorageDirectory();
+
+                File.WriteAllText(
+                    StoragePath,
+                    CsvHeader + Environment.NewLine,
+                    new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             }
         }
 
-        private void EnsureStorage()
+        public string GetStoragePath()
         {
-            if (!Directory.Exists(_dataDirectory))
-                Directory.CreateDirectory(_dataDirectory);
+            EnsureStorageFile();
+            return StoragePath;
+        }
 
-            if (!File.Exists(_logFilePath))
+        private static void EnsureStorageFile()
+        {
+            EnsureStorageDirectory();
+
+            if (!File.Exists(StoragePath))
             {
-                using (var writer = new StreamWriter(_logFilePath, false, Encoding.UTF8))
-                {
-                    writer.WriteLine("Timestamp,AnalyzerId,PM25,CO2,AQI,Status");
-                }
+                File.WriteAllText(
+                    StoragePath,
+                    CsvHeader + Environment.NewLine,
+                    new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            }
+        }
+
+        private static void EnsureStorageDirectory()
+        {
+            if (!Directory.Exists(StorageDirectory))
+            {
+                Directory.CreateDirectory(StorageDirectory);
             }
         }
     }
