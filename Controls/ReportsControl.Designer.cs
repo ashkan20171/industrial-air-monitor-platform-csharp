@@ -23,6 +23,7 @@
             {
                 components.Dispose();
             }
+
             base.Dispose(disposing);
         }
 
@@ -48,7 +49,7 @@
             this.SuspendLayout();
 
             // pnlFilterHeader
-            this.pnlFilterHeader.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(42)))), ((int)(((byte)(48)))));
+            this.pnlFilterHeader.BackColor = System.Drawing.Color.FromArgb(40, 42, 48);
             this.pnlFilterHeader.Controls.Add(this.btnExportCsv);
             this.pnlFilterHeader.Controls.Add(this.btnGenerateReport);
             this.pnlFilterHeader.Controls.Add(this.dtpTo);
@@ -68,6 +69,7 @@
             this.lblFrom.Font = new System.Drawing.Font("Segoe UI", 9.5F);
             this.lblFrom.Name = "lblFrom";
             this.lblFrom.Size = new System.Drawing.Size(43, 17);
+            this.lblFrom.TabIndex = 0;
             this.lblFrom.Text = "From:";
 
             // dtpFrom
@@ -76,7 +78,7 @@
             this.dtpFrom.Location = new System.Drawing.Point(70, 27);
             this.dtpFrom.Font = new System.Drawing.Font("Segoe UI", 9.5F);
             this.dtpFrom.Name = "dtpFrom";
-            this.dtpFrom.Size = new System.Drawing.Size(160, 25);
+            this.dtpFrom.Size = new System.Drawing.Size(160, 24);
             this.dtpFrom.TabIndex = 1;
 
             // lblTo
@@ -86,6 +88,7 @@
             this.lblTo.Font = new System.Drawing.Font("Segoe UI", 9.5F);
             this.lblTo.Name = "lblTo";
             this.lblTo.Size = new System.Drawing.Size(25, 17);
+            this.lblTo.TabIndex = 2;
             this.lblTo.Text = "To:";
 
             // dtpTo
@@ -94,29 +97,31 @@
             this.dtpTo.Location = new System.Drawing.Point(285, 27);
             this.dtpTo.Font = new System.Drawing.Font("Segoe UI", 9.5F);
             this.dtpTo.Name = "dtpTo";
-            this.dtpTo.Size = new System.Drawing.Size(160, 25);
-            this.dtpTo.TabIndex = 2;
+            this.dtpTo.Size = new System.Drawing.Size(160, 24);
+            this.dtpTo.TabIndex = 3;
 
             // btnGenerateReport
-            this.btnGenerateReport.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(26)))), ((int)(((byte)(115)))), ((int)(((byte)(232)))));
+            this.btnGenerateReport.BackColor = System.Drawing.Color.FromArgb(26, 115, 232);
             this.btnGenerateReport.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnGenerateReport.ForeColor = System.Drawing.Color.White;
             this.btnGenerateReport.Location = new System.Drawing.Point(470, 24);
             this.btnGenerateReport.Name = "btnGenerateReport";
             this.btnGenerateReport.Size = new System.Drawing.Size(130, 32);
             this.btnGenerateReport.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.btnGenerateReport.TabIndex = 4;
             this.btnGenerateReport.Text = "Generate Report";
             this.btnGenerateReport.UseVisualStyleBackColor = false;
             this.btnGenerateReport.Click += new System.EventHandler(this.btnGenerateReport_Click);
 
             // btnExportCsv
-            this.btnExportCsv.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(168)))), ((int)(((byte)(83)))));
+            this.btnExportCsv.BackColor = System.Drawing.Color.FromArgb(52, 168, 83);
             this.btnExportCsv.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnExportCsv.ForeColor = System.Drawing.Color.White;
             this.btnExportCsv.Location = new System.Drawing.Point(610, 24);
             this.btnExportCsv.Name = "btnExportCsv";
             this.btnExportCsv.Size = new System.Drawing.Size(120, 32);
             this.btnExportCsv.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.btnExportCsv.TabIndex = 5;
             this.btnExportCsv.Text = "Export to CSV";
             this.btnExportCsv.UseVisualStyleBackColor = false;
             this.btnExportCsv.Click += new System.EventHandler(this.btnExportCsv_Click);
@@ -130,7 +135,7 @@
             this.dgvReport.TabIndex = 1;
 
             // pnlStatsSummary
-            this.pnlStatsSummary.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(42)))), ((int)(((byte)(48)))));
+            this.pnlStatsSummary.BackColor = System.Drawing.Color.FromArgb(40, 42, 48);
             this.pnlStatsSummary.Controls.Add(this.lblTotalLogs);
             this.pnlStatsSummary.Controls.Add(this.lblAvgAqi);
             this.pnlStatsSummary.Controls.Add(this.lblMaxAqi);
@@ -146,6 +151,9 @@
             this.lblTotalLogs.ForeColor = System.Drawing.Color.LightGray;
             this.lblTotalLogs.Location = new System.Drawing.Point(20, 22);
             this.lblTotalLogs.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.lblTotalLogs.Name = "lblTotalLogs";
+            this.lblTotalLogs.Size = new System.Drawing.Size(85, 17);
+            this.lblTotalLogs.TabIndex = 0;
             this.lblTotalLogs.Text = "Total Logs: 0";
 
             // lblAvgAqi
@@ -153,31 +161,41 @@
             this.lblAvgAqi.ForeColor = System.Drawing.Color.LightGray;
             this.lblAvgAqi.Location = new System.Drawing.Point(220, 22);
             this.lblAvgAqi.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.lblAvgAqi.Name = "lblAvgAqi";
+            this.lblAvgAqi.Size = new System.Drawing.Size(114, 17);
+            this.lblAvgAqi.TabIndex = 1;
             this.lblAvgAqi.Text = "Average AQI: N/A";
 
             // lblMaxAqi
             this.lblMaxAqi.AutoSize = true;
-            this.lblMaxAqi.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(234)))), ((int)(((byte)(67)))), ((int)(((byte)(53)))));
+            this.lblMaxAqi.ForeColor = System.Drawing.Color.FromArgb(234, 67, 53);
             this.lblMaxAqi.Location = new System.Drawing.Point(450, 22);
             this.lblMaxAqi.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.lblMaxAqi.Name = "lblMaxAqi";
+            this.lblMaxAqi.Size = new System.Drawing.Size(85, 17);
+            this.lblMaxAqi.TabIndex = 2;
             this.lblMaxAqi.Text = "Max AQI: N/A";
 
             // lblMinAqi
             this.lblMinAqi.AutoSize = true;
-            this.lblMinAqi.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(168)))), ((int)(((byte)(83)))));
+            this.lblMinAqi.ForeColor = System.Drawing.Color.FromArgb(52, 168, 83);
             this.lblMinAqi.Location = new System.Drawing.Point(680, 22);
             this.lblMinAqi.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.lblMinAqi.Name = "lblMinAqi";
+            this.lblMinAqi.Size = new System.Drawing.Size(82, 17);
+            this.lblMinAqi.TabIndex = 3;
             this.lblMinAqi.Text = "Min AQI: N/A";
 
             // ReportsControl
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(33)))), ((int)(((byte)(36)))));
+            this.BackColor = System.Drawing.Color.FromArgb(32, 33, 36);
             this.Controls.Add(this.dgvReport);
             this.Controls.Add(this.pnlStatsSummary);
             this.Controls.Add(this.pnlFilterHeader);
             this.Name = "ReportsControl";
             this.Size = new System.Drawing.Size(900, 560);
+
             this.pnlFilterHeader.ResumeLayout(false);
             this.pnlFilterHeader.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvReport)).EndInit();

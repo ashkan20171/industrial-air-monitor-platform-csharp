@@ -3,12 +3,20 @@
   "WorkspaceRootPath": "F:\\project\\C#\\AshkanAQMS\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|f:\\project\\c#\\ashkanaqms\\controls\\currentdatacontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:controls\\currentdatacontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|f:\\project\\c#\\ashkanaqms\\controls\\reportscontrol.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:controls\\reportscontrol.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|f:\\project\\c#\\ashkanaqms\\controls\\reportscontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:controls\\reportscontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|f:\\project\\c#\\ashkanaqms\\controls\\currentdatacontrol.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:controls\\currentdatacontrol.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|f:\\project\\c#\\ashkanaqms\\controls\\currentdatacontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|solutionrelative:controls\\currentdatacontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{7E5D29F7-7B2E-4B57-A5D5-8F7B7E95C111}|AshkanAQMS.csproj|f:\\project\\c#\\ashkanaqms\\models\\airqualitydata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -30,36 +38,63 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ReportsControl.Designer.cs",
+              "DocumentMoniker": "F:\\project\\C#\\AshkanAQMS\\Controls\\ReportsControl.Designer.cs",
+              "RelativeDocumentMoniker": "Controls\\ReportsControl.Designer.cs",
+              "ToolTip": "F:\\project\\C#\\AshkanAQMS\\Controls\\ReportsControl.Designer.cs",
+              "RelativeToolTip": "Controls\\ReportsControl.Designer.cs",
+              "ViewState": "AgIAALcAAAAAAAAAAAAUwM8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-24T17:19:22.636Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "ReportsControl.cs",
+              "DocumentMoniker": "F:\\project\\C#\\AshkanAQMS\\Controls\\ReportsControl.cs",
+              "RelativeDocumentMoniker": "Controls\\ReportsControl.cs",
+              "ToolTip": "F:\\project\\C#\\AshkanAQMS\\Controls\\ReportsControl.cs",
+              "RelativeToolTip": "Controls\\ReportsControl.cs",
+              "ViewState": "AgIAAMcAAAAAAAAAAAAgwOIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-24T17:18:54.751Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "CurrentDataControl.Designer.cs",
               "DocumentMoniker": "F:\\project\\C#\\AshkanAQMS\\Controls\\CurrentDataControl.Designer.cs",
               "RelativeDocumentMoniker": "Controls\\CurrentDataControl.Designer.cs",
               "ToolTip": "F:\\project\\C#\\AshkanAQMS\\Controls\\CurrentDataControl.Designer.cs",
               "RelativeToolTip": "Controls\\CurrentDataControl.Designer.cs",
-              "ViewState": "AgIAACoAAAAAAAAAAAAAADsAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAHABAAAAAAAAAAAUwH0BAAAwAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-24T10:00:19.397Z"
+              "WhenOpened": "2026-07-24T10:00:19.397Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
               "Title": "CurrentDataControl.cs",
               "DocumentMoniker": "F:\\project\\C#\\AshkanAQMS\\Controls\\CurrentDataControl.cs",
               "RelativeDocumentMoniker": "Controls\\CurrentDataControl.cs",
               "ToolTip": "F:\\project\\C#\\AshkanAQMS\\Controls\\CurrentDataControl.cs",
               "RelativeToolTip": "Controls\\CurrentDataControl.cs",
-              "ViewState": "AgIAACEAAAAAAAAAAAAvwDYAAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAAGgBAAAAAAAAAAAgwIMBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-07-24T09:48:21.125Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 5,
               "Title": "AqiCalculator.cs",
               "DocumentMoniker": "F:\\project\\C#\\AshkanAQMS\\Services\\AqiCalculator.cs",
               "RelativeDocumentMoniker": "Services\\AqiCalculator.cs",
@@ -71,7 +106,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 6,
               "Title": "AqiStandard.cs",
               "DocumentMoniker": "F:\\project\\C#\\AshkanAQMS\\Models\\AqiStandard.cs",
               "RelativeDocumentMoniker": "Models\\AqiStandard.cs",
@@ -83,7 +118,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
               "Title": "AirQualityData.cs",
               "DocumentMoniker": "F:\\project\\C#\\AshkanAQMS\\Models\\AirQualityData.cs",
               "RelativeDocumentMoniker": "Models\\AirQualityData.cs",
