@@ -16,6 +16,45 @@ namespace AshkanAQMS.Services
 
         private static readonly string StoragePath =
             Path.Combine(StorageDirectory, StorageFileName);
+        private static readonly string SettingsFilePath = System.IO.Path.Combine(
+    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+    "AshkanAQMS",
+    "settings.xml"
+);
+
+        public static AppSettings LoadSettings()
+        {
+            try
+            {
+                if (!System.IO.File.Exists(SettingsFilePath))
+                    return new AppSettings();
+
+                var serializer = new System.Xml.Serialization.XmlSerializer(typeof(AppSettings));
+                using (var stream = new System.IO.FileStream(SettingsFilePath, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite))
+                {
+                    return (AppSettings)serializer.Deserialize(stream);
+                }
+            }
+            catch
+            {
+                return new AppSettings();
+            }
+        }
+
+        public static void SaveSettings(AppSettings settings)
+        {
+            if (settings == null) throw new ArgumentNullException(nameof(settings));
+
+            var dir = System.IO.Path.GetDirectoryName(SettingsFilePath);
+            if (!string.IsNullOrEmpty(dir) && !System.IO.Directory.Exists(dir))
+                System.IO.Directory.CreateDirectory(dir);
+
+            var serializer = new System.Xml.Serialization.XmlSerializer(typeof(AppSettings));
+            using (var writer = new System.IO.StreamWriter(SettingsFilePath))
+            {
+                serializer.Serialize(writer, settings);
+            }
+        }
 
         public static List<AnalyzerConfig> LoadAnalyzers()
         {

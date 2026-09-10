@@ -6,65 +6,77 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using AshkanAQMS.Models;
+using AshkanAQMS.Services;
 
 namespace AshkanAQMS
 {
     public partial class CurrentDataControl : UserControl
     {
-        private readonly Timer _monitorTimer;
-        private readonly Random _random;
-        private readonly List<SensorSnapshot> _history;
-        private const int MaxHistoryItems = 50;
-
+        private Timer _monitorTimer;
+        private Random _random;
+        private readonly List<AirQualityData> _history = new List<AirQualityData>();
+        private readonly AiService _aiService = new AiService();
         private bool _isMonitoring = true;
+        private const int MaxHistoryCount = 50;
+
+        // متغیرهای ذخیره وضعیت AI
+        private double _lastPredictedAqi = 0;
+        private string _lastAiRecommendation = "سیستم در حال جمع‌آوری داده...";
+        private string _lastAnomalyMessage = string.Empty;
+        private bool _isAnomalyDetected = false;
 
         public CurrentDataControl()
         {
             InitializeComponent();
-
             _random = new Random();
-            _history = new List<SensorSnapshot>();
+            InitializeMonitoringTimer();
+        }
 
+        private void InitializeMonitoringTimer()
+        {
             _monitorTimer = new Timer();
             _monitorTimer.Interval = 2000;
             _monitorTimer.Tick += MonitorTimer_Tick;
-
-            Load += CurrentDataControl_Load;
         }
 
         private void CurrentDataControl_Load(object sender, EventArgs e)
         {
-            btnStartStop.Text = "Stop";
+            if (btnStartStop != null)
+                btnStartStop.Text = "Stop";
+
+            // تولید داده اولیه و شروع
             GenerateAndDisplaySnapshot();
             StartMonitoring();
         }
 
-        private void StartMonitoring()
+        public void StartMonitoring()
         {
             _isMonitoring = true;
-
-            if (!_monitorTimer.Enabled)
-                _monitorTimer.Start();
-
-            btnStartStop.Text = "Stop";
+            _monitorTimer?.Start();
+            if (btnStartStop != null)
+                btnStartStop.Text = "Stop";
         }
 
-        private void StopMonitoring()
+        public void StopMonitoring()
         {
             _isMonitoring = false;
-
-            if (_monitorTimer.Enabled)
-                _monitorTimer.Stop();
-
-            btnStartStop.Text = "Start";
+            _monitorTimer?.Stop();
+            if (btnStartStop != null)
+                btnStartStop.Text = "Start";
         }
 
-        private void ToggleMonitoring()
+        public void ToggleMonitoring()
         {
             if (_isMonitoring)
                 StopMonitoring();
             else
                 StartMonitoring();
+        }
+
+        private void btnStartStop_Click(object sender, EventArgs e)
+        {
+            ToggleMonitoring();
         }
 
         private void MonitorTimer_Tick(object sender, EventArgs e)
@@ -74,314 +86,291 @@ namespace AshkanAQMS
 
         private void GenerateAndDisplaySnapshot()
         {
-            SensorSnapshot snapshot = GenerateSnapshot();
+            var data = GenerateData();
 
-            _history.Insert(0, snapshot);
+            // محاسبه AQI با ساختار استاندارد جدید
+            data.CalculateAQI();
 
-            if (_history.Count > MaxHistoryItems)
+            // ذخیره در سابقه داده‌ها (جدیدترین در ابتدای لیست)
+            _history.Insert(0, data);
+            if (_history.Count > MaxHistoryCount)
+            {
                 _history.RemoveAt(_history.Count - 1);
+            }
 
-            UpdateDashboard(snapshot);
+            // پردازش و تحلیل با AiService (سازگار با .NET 4.8 بدون نیاز به TakeLast)
+            RunAiAnalysis(data);
+
+            // به‌روزرسانی UI
+            UpdateDashboard(data);
             RefreshLogsGrid();
-            pnlChartContainer.Invalidate();
+            pnlChartContainer?.Invalidate();
         }
 
-        private SensorSnapshot GenerateSnapshot()
+        private AirQualityData GenerateData()
         {
-            double pm25 = Math.Round(5 + _random.NextDouble() * 75, 1);
-            double pm10 = Math.Round(10 + _random.NextDouble() * 110, 1);
-            double co2 = Math.Round(400 + _random.NextDouble() * 1400, 0);
-            double no2 = Math.Round(5 + _random.NextDouble() * 195, 1);
-            double temperature = Math.Round(15 + _random.NextDouble() * 20, 1);
-            double humidity = Math.Round(20 + _random.NextDouble() * 60, 1);
-
-            int aqi = CalculateAqi(pm25, pm10, co2, no2, out string dominantPollutant);
-            string status = GetAqiStatus(aqi);
-
-            return new SensorSnapshot
+            return new AirQualityData
             {
                 Timestamp = DateTime.Now,
-                PM25 = pm25,
-                PM10 = pm10,
-                CO2 = co2,
-                NO2 = no2,
-                Temperature = temperature,
-                Humidity = humidity,
-                AQI = aqi,
-                Status = status,
-                DominantPollutant = dominantPollutant
+                PM25 = Math.Round(5.0 + (_random.NextDouble() * 75.0), 1),
+                PM10 = Math.Round(10.0 + (_random.NextDouble() * 110.0), 1),
+                CO2 = Math.Round(400.0 + (_random.NextDouble() * 1400.0), 0),
+                NO2 = Math.Round(5.0 + (_random.NextDouble() * 195.0), 1),
+                Temperature = Math.Round(15.0 + (_random.NextDouble() * 20.0), 1),
+                Humidity = Math.Round(20.0 + (_random.NextDouble() * 60.0), 1),
+                Location = "Station A"
             };
         }
 
-        private int CalculateAqi(double pm25, double pm10, double co2, double no2, out string dominantPollutant)
+        private void RunAiAnalysis(AirQualityData currentData)
         {
-            double pm25Index = Math.Min(500, pm25 * 4.0);
-            double pm10Index = Math.Min(500, pm10 * 2.0);
-            double co2Index = Math.Min(500, Math.Max(0, (co2 - 400) / 4.0));
-            double no2Index = Math.Min(500, no2 * 2.5);
+            // ترتیب زمانی صعودی برای تحلیل سری زمانی
+            var chronologicalList = _history.AsEnumerable().Reverse().ToList();
 
-            var scores = new Dictionary<string, double>
+            if (chronologicalList.Count >= 5)
             {
-                { "PM2.5", pm25Index },
-                { "PM10", pm10Index },
-                { "CO2", co2Index },
-                { "NO2", no2Index }
-            };
+                // ۱. تشخیص آنومالی سنسور روی شاخص PM2.5
+                var pm25History = chronologicalList.Select(x => x.PM25);
+                _isAnomalyDetected = _aiService.IsAnomalyDetected(pm25History, currentData.PM25, out _lastAnomalyMessage);
 
-            var maxEntry = scores.OrderByDescending(x => x.Value).First();
-            dominantPollutant = maxEntry.Key;
+                // ۲. پیش‌بینی روند AQI بعدی
+                var aqiHistory = chronologicalList.Select(x => (double)x.AQI);
+                _lastPredictedAqi = _aiService.PredictNextValue(aqiHistory, alpha: 0.35);
 
-            return (int)Math.Round(maxEntry.Value);
+                // ۳. صدور توصیه‌های هوشمند برای اپراتور
+                _lastAiRecommendation = _aiService.GenerateActionRecommendation(currentData, _lastPredictedAqi);
+            }
+            else
+            {
+                _lastPredictedAqi = currentData.AQI;
+                _lastAiRecommendation = "سیستم در حال ثبت و تثبیت الگوهای داده است...";
+                _isAnomalyDetected = false;
+                _lastAnomalyMessage = string.Empty;
+            }
         }
 
-        private string GetAqiStatus(int aqi)
+        private void UpdateDashboard(AirQualityData data)
         {
-            if (aqi <= 50) return "Good";
-            if (aqi <= 100) return "Moderate";
-            if (aqi <= 150) return "Unhealthy for Sensitive Groups";
-            if (aqi <= 200) return "Unhealthy";
-            if (aqi <= 300) return "Very Unhealthy";
-            return "Hazardous";
+            if (lblTimestamp != null)
+                lblTimestamp.Text = "Last Update: " + data.Timestamp.ToString("yyyy-MM-dd HH:mm:ss");
+
+            if (lblAQIValue != null)
+                lblAQIValue.Text = data.AQI.ToString();
+
+            if (lblStatus != null)
+            {
+                lblStatus.Text = data.AQICategory;
+                lblStatus.ForeColor = GetStatusTextColor(data.AQI);
+            }
+
+            if (lblPM25Value != null)
+                lblPM25Value.Text = data.PM25.ToString("F1") + " µg/m³";
+
+            if (lblPM10Value != null)
+                lblPM10Value.Text = data.PM10.ToString("F1") + " µg/m³";
+
+            if (lblCO2Value != null)
+                lblCO2Value.Text = data.CO2.ToString("F0") + " ppm";
+
+            if (lblNO2Value != null)
+                lblNO2Value.Text = data.NO2.ToString("F1") + " ppb";
+
+            if (lblTempValue != null)
+                lblTempValue.Text = data.Temperature.ToString("F1") + " °C";
+
+            if (lblHumValue != null)
+                lblHumValue.Text = data.Humidity.ToString("F1") + " %";
+
+            if (lblDominantPollutant != null)
+            {
+                string infoText = "Dominant: " + data.DominantPollutant;
+                if (_lastPredictedAqi > 0)
+                {
+                    infoText += string.Format(" | Predicted AQI: {0:F0}", _lastPredictedAqi);
+                }
+                lblDominantPollutant.Text = infoText;
+            }
+
+            if (pnlAQIIndicator != null)
+            {
+                if (_isAnomalyDetected)
+                {
+                    pnlAQIIndicator.BackColor = Color.Crimson; // هشدار خطای سنسور
+                }
+                else
+                {
+                    pnlAQIIndicator.BackColor = GetAqiColor(data.AQI);
+                }
+            }
         }
 
         private Color GetAqiColor(int aqi)
         {
-            if (aqi <= 50) return Color.FromArgb(76, 175, 80);
-            if (aqi <= 100) return Color.FromArgb(255, 193, 7);
-            if (aqi <= 150) return Color.FromArgb(255, 152, 0);
-            if (aqi <= 200) return Color.FromArgb(244, 67, 54);
-            if (aqi <= 300) return Color.FromArgb(156, 39, 176);
-            return Color.FromArgb(97, 97, 97);
+            if (aqi <= 50) return Color.FromArgb(76, 175, 80);     // Good (Green)
+            if (aqi <= 100) return Color.FromArgb(255, 235, 59);   // Moderate (Yellow)
+            if (aqi <= 150) return Color.FromArgb(255, 152, 0);    // Sensitive (Orange)
+            if (aqi <= 200) return Color.FromArgb(244, 67, 54);    // Unhealthy (Red)
+            if (aqi <= 300) return Color.FromArgb(156, 39, 176);   // Very Unhealthy (Purple)
+            return Color.FromArgb(136, 14, 79);                    // Hazardous (Maroon)
         }
 
         private Color GetStatusTextColor(int aqi)
         {
             if (aqi <= 50) return Color.FromArgb(46, 125, 50);
-            if (aqi <= 100) return Color.FromArgb(245, 124, 0);
+            if (aqi <= 100) return Color.FromArgb(245, 127, 23);
             if (aqi <= 150) return Color.FromArgb(230, 81, 0);
             if (aqi <= 200) return Color.FromArgb(198, 40, 40);
-            if (aqi <= 300) return Color.FromArgb(123, 31, 162);
-            return Color.FromArgb(66, 66, 66);
-        }
-
-        private void UpdateDashboard(SensorSnapshot snapshot)
-        {
-            lblTimestamp.Text = $"Last update: {snapshot.Timestamp:yyyy-MM-dd HH:mm:ss}";
-            lblAQIValue.Text = snapshot.AQI.ToString();
-
-            lblStatus.Text = snapshot.Status;
-            lblStatus.ForeColor = GetStatusTextColor(snapshot.AQI);
-
-            lblPM25.Text = $"{snapshot.PM25:0.0} µg/m³";
-            lblPM10.Text = $"{snapshot.PM10:0.0} µg/m³";
-            lblCO2.Text = $"{snapshot.CO2:0} ppm";
-            lblNO2.Text = $"{snapshot.NO2:0.0} ppb";
-            lblTemp.Text = $"{snapshot.Temperature:0.0} °C";
-            lblHum.Text = $"{snapshot.Humidity:0.0} %";
-            lblDominantPollutant.Text = $"Dominant: {snapshot.DominantPollutant}";
-
-            pnlAQIIndicator.BackColor = GetAqiColor(snapshot.AQI);
+            if (aqi <= 300) return Color.FromArgb(106, 27, 154);
+            return Color.FromArgb(74, 20, 140);
         }
 
         private void RefreshLogsGrid()
         {
-            dgvLogs.SuspendLayout();
-            try
+            if (dgvLogs == null) return;
+
+            dgvLogs.Rows.Clear();
+            foreach (var item in _history)
             {
-                dgvLogs.Rows.Clear();
-
-                foreach (var item in _history.OrderByDescending(x => x.Timestamp))
-                {
-                    dgvLogs.Rows.Add(
-                        item.Timestamp.ToString("yyyy-MM-dd HH:mm:ss"),
-                        item.AQI.ToString(),
-                        item.PM25.ToString("0.0"),
-                        item.CO2.ToString("0"),
-                        item.Temperature.ToString("0.0"),
-                        item.Humidity.ToString("0.0")
-                    );
-                }
+                dgvLogs.Rows.Add(
+                    item.Timestamp.ToString("HH:mm:ss"),
+                    item.AQI,
+                    item.PM25.ToString("F1"),
+                    item.CO2.ToString("F0"),
+                    item.Temperature.ToString("F1"),
+                    item.Humidity.ToString("F1")
+                );
             }
-            finally
-            {
-                dgvLogs.ResumeLayout();
-            }
-        }
-
-        private void ExportHistoryToCsv(string filePath)
-        {
-            var sb = new StringBuilder();
-
-            sb.AppendLine("Timestamp,AQI,Status,PM2.5,PM10,CO2,NO2,Temperature,Humidity,DominantPollutant");
-
-            foreach (var item in _history.OrderBy(x => x.Timestamp))
-            {
-                sb.AppendLine(string.Join(",",
-                    Csv(item.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")),
-                    Csv(item.AQI.ToString()),
-                    Csv(item.Status),
-                    Csv(item.PM25.ToString("0.0")),
-                    Csv(item.PM10.ToString("0.0")),
-                    Csv(item.CO2.ToString("0")),
-                    Csv(item.NO2.ToString("0.0")),
-                    Csv(item.Temperature.ToString("0.0")),
-                    Csv(item.Humidity.ToString("0.0")),
-                    Csv(item.DominantPollutant)
-                ));
-            }
-
-            File.WriteAllText(filePath, sb.ToString(), Encoding.UTF8);
-        }
-
-        private string Csv(string value)
-        {
-            if (value == null)
-                return "\"\"";
-
-            return "\"" + value.Replace("\"", "\"\"") + "\"";
         }
 
         private void btnExport_Click(object sender, EventArgs e)
         {
-            if (_history.Count == 0)
+            using (SaveFileDialog sfd = new SaveFileDialog())
             {
-                MessageBox.Show("No data available to export.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            using (var dialog = new SaveFileDialog())
-            {
-                dialog.Title = "Export AQMS Data";
-                dialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
-                dialog.FileName = $"aqms_report_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
-
-                if (dialog.ShowDialog() == DialogResult.OK)
+                sfd.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
+                sfd.FileName = string.Format("aqms_report_{0:yyyyMMdd_HHmmss}.csv", DateTime.Now);
+                if (sfd.ShowDialog() == DialogResult.OK)
                 {
-                    try
-                    {
-                        ExportHistoryToCsv(dialog.FileName);
-                        MessageBox.Show("CSV exported successfully.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Export failed:\n{ex.Message}", "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
+                    ExportHistoryToCsv(sfd.FileName);
                 }
             }
         }
 
-        private void btnStartStop_Click(object sender, EventArgs e)
+        public void ExportHistoryToCsv(string filePath)
         {
-            ToggleMonitoring();
+            try
+            {
+                using (StreamWriter sw = new StreamWriter(filePath, false, Encoding.UTF8))
+                {
+                    sw.WriteLine("Timestamp,AQI,Category,PM2.5,PM10,CO2,NO2,Temperature,Humidity,DominantPollutant");
+                    foreach (var item in _history)
+                    {
+                        sw.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9}",
+                            Csv(item.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")),
+                            item.AQI,
+                            Csv(item.AQICategory),
+                            item.PM25,
+                            item.PM10,
+                            item.CO2,
+                            item.NO2,
+                            item.Temperature,
+                            item.Humidity,
+                            Csv(item.DominantPollutant)));
+                    }
+                }
+                MessageBox.Show("گزارش داده‌ها با موفقیت ذخیره شد.", "صادرات فایل", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("خطا در ذخیره فایل: " + ex.Message, "خطا", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private string Csv(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return "\"\"";
+            return "\"" + text.Replace("\"", "\"\"") + "\"";
         }
 
         private void pnlChartContainer_Paint(object sender, PaintEventArgs e)
         {
-            var g = e.Graphics;
-            var rect = pnlChartContainer.ClientRectangle;
-
+            Graphics g = e.Graphics;
             g.SmoothingMode = SmoothingMode.AntiAlias;
-            g.Clear(pnlChartContainer.BackColor);
 
-            if (_history.Count == 0)
-            {
-                using (var brush = new SolidBrush(Color.Gray))
-                using (var font = new Font("Segoe UI", 10, FontStyle.Italic))
-                {
-                    var text = "No chart data yet";
-                    var size = g.MeasureString(text, font);
-                    g.DrawString(
-                        text,
-                        font,
-                        brush,
-                        (rect.Width - size.Width) / 2,
-                        (rect.Height - size.Height) / 2
-                    );
-                }
+            int width = pnlChartContainer.Width;
+            int height = pnlChartContainer.Height;
+
+            int marginLeft = 50;
+            int marginRight = 20;
+            int marginTop = 20;
+            int marginBottom = 35;
+
+            int plotWidth = width - marginLeft - marginRight;
+            int plotHeight = height - marginTop - marginBottom;
+
+            if (plotWidth <= 10 || plotHeight <= 10)
                 return;
-            }
 
-            const int paddingLeft = 50;
-            const int paddingRight = 20;
-            const int paddingTop = 20;
-            const int paddingBottom = 35;
-
-            var plotRect = new Rectangle(
-                paddingLeft,
-                paddingTop,
-                Math.Max(1, rect.Width - paddingLeft - paddingRight),
-                Math.Max(1, rect.Height - paddingTop - paddingBottom)
-            );
-
-            using (var axisPen = new Pen(Color.FromArgb(180, 180, 180), 1))
-            using (var gridPen = new Pen(Color.FromArgb(230, 230, 230), 1))
-            using (var linePen = new Pen(Color.FromArgb(33, 150, 243), 2))
-            using (var pointBrush = new SolidBrush(Color.FromArgb(33, 150, 243)))
-            using (var labelBrush = new SolidBrush(Color.DimGray))
-            using (var font = new Font("Segoe UI", 8f))
+            // پس‌زمینه نمودار
+            using (SolidBrush bgBrush = new SolidBrush(Color.White))
             {
-                int[] yMarks = { 0, 100, 200, 300, 400, 500 };
-
-                foreach (int mark in yMarks)
-                {
-                    float y = plotRect.Bottom - (mark / 500f) * plotRect.Height;
-
-                    g.DrawLine(gridPen, plotRect.Left, y, plotRect.Right, y);
-                    g.DrawLine(axisPen, plotRect.Left - 4, y, plotRect.Left, y);
-
-                    string label = mark.ToString();
-                    var size = g.MeasureString(label, font);
-                    g.DrawString(label, font, labelBrush, plotRect.Left - size.Width - 6, y - size.Height / 2);
-                }
-
-                g.DrawLine(axisPen, plotRect.Left, plotRect.Top, plotRect.Left, plotRect.Bottom);
-                g.DrawLine(axisPen, plotRect.Left, plotRect.Bottom, plotRect.Right, plotRect.Bottom);
-
-                var ordered = _history.OrderBy(x => x.Timestamp).ToList();
-
-                if (ordered.Count == 1)
-                {
-                    float singleX = plotRect.Left + plotRect.Width / 2f;
-                    float singleY = plotRect.Bottom - (Math.Min(500, ordered[0].AQI) / 500f) * plotRect.Height;
-                    g.FillEllipse(pointBrush, singleX - 4, singleY - 4, 8, 8);
-                    return;
-                }
-
-                PointF? previousPoint = null;
-
-                for (int i = 0; i < ordered.Count; i++)
-                {
-                    float x = plotRect.Left + (i * 1f / (ordered.Count - 1)) * plotRect.Width;
-                    float normalizedAqi = Math.Min(500, Math.Max(0, ordered[i].AQI)) / 500f;
-                    float y = plotRect.Bottom - normalizedAqi * plotRect.Height;
-
-                    PointF currentPoint = new PointF(x, y);
-
-                    if (previousPoint.HasValue)
-                        g.DrawLine(linePen, previousPoint.Value, currentPoint);
-
-                    g.FillEllipse(pointBrush, x - 4, y - 4, 8, 8);
-                    previousPoint = currentPoint;
-                }
-
-                var latest = ordered.Last();
-                string latestText = $"Latest AQI: {latest.AQI}";
-                g.DrawString(latestText, new Font("Segoe UI", 9f, FontStyle.Bold), labelBrush, plotRect.Right - 120, plotRect.Top - 2);
+                g.FillRectangle(bgBrush, marginLeft, marginTop, plotWidth, plotHeight);
             }
-        }
 
-        private class SensorSnapshot
-        {
-            public DateTime Timestamp { get; set; }
-            public double PM25 { get; set; }
-            public double PM10 { get; set; }
-            public double CO2 { get; set; }
-            public double NO2 { get; set; }
-            public double Temperature { get; set; }
-            public double Humidity { get; set; }
-            public int AQI { get; set; }
-            public string Status { get; set; }
-            public string DominantPollutant { get; set; }
+            // خطوط گرید و برچسب‌های محور عمودی (AQI: 0 تا 500)
+            using (Pen gridPen = new Pen(Color.FromArgb(230, 230, 230), 1))
+            using (Font font = new Font("Segoe UI", 8))
+            using (SolidBrush textBrush = new SolidBrush(Color.FromArgb(120, 120, 120)))
+            {
+                for (int aqiVal = 0; aqiVal <= 500; aqiVal += 100)
+                {
+                    float y = marginTop + plotHeight - (aqiVal / 500f * plotHeight);
+                    g.DrawLine(gridPen, marginLeft, y, marginLeft + plotWidth, y);
+                    g.DrawString(aqiVal.ToString(), font, textBrush, 10, y - 6);
+                }
+            }
+
+            if (_history.Count == 0) return;
+
+            // رسم داده‌های AQI
+            var chronological = _history.AsEnumerable().Reverse().ToList();
+            PointF[] points = new PointF[chronological.Count];
+
+            float stepX = (chronological.Count > 1) ? (float)plotWidth / (chronological.Count - 1) : 0;
+
+            for (int i = 0; i < chronological.Count; i++)
+            {
+                float x = marginLeft + (i * stepX);
+                float normalizedAqi = Math.Min(500, Math.Max(0, chronological[i].AQI));
+                float y = marginTop + plotHeight - (normalizedAqi / 500f * plotHeight);
+                points[i] = new PointF(x, y);
+            }
+
+            if (points.Length > 1)
+            {
+                using (Pen linePen = new Pen(Color.FromArgb(33, 150, 243), 2.5f))
+                {
+                    g.DrawLines(linePen, points);
+                }
+            }
+
+            // رسم نقاط داده و نقطه پیش‌بینی
+            using (SolidBrush dotBrush = new SolidBrush(Color.FromArgb(30, 136, 229)))
+            {
+                foreach (var pt in points)
+                {
+                    g.FillEllipse(dotBrush, pt.X - 3.5f, pt.Y - 3.5f, 7, 7);
+                }
+            }
+
+            // نمایش هشدار یا توصیه هوش مصنوعی در زیر نمودار در صورت بروز ناهنجاری
+            if (_isAnomalyDetected)
+            {
+                using (Font alertFont = new Font("Segoe UI", 8.5f, FontStyle.Bold))
+                using (SolidBrush alertBrush = new SolidBrush(Color.Crimson))
+                {
+                    g.DrawString("⚠ " + _lastAnomalyMessage, alertFont, alertBrush, marginLeft + 5, marginTop + 5);
+                }
+            }
         }
     }
 }

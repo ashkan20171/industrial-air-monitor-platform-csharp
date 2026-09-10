@@ -97,34 +97,18 @@ namespace AshkanAQMS
         {
             SetActiveButton(btnReports);
             LoadPage(new AshkanAQMS.Controls.ReportsControl());
-
         }
 
         private void ShowSettingsPage()
         {
-            SetActiveButton(btnSettings);
-            LoadPage(CreatePlaceholderPage("Settings"));
-        }
-
-        private UserControl CreatePlaceholderPage(string title)
-        {
-            var page = new UserControl
+            // فرم تنظیمات به شکل Modal باز می‌شود تا بدون خارج شدن از مانیتورینگ، تنظیمات اعمال شود
+            using (var settingsForm = new SettingsForm())
             {
-                BackColor = Color.FromArgb(247, 249, 252),
-                Dock = DockStyle.Fill
-            };
-
-            var label = new Label
-            {
-                AutoSize = true,
-                Font = new Font("Segoe UI", 20F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(31, 42, 54),
-                Location = new Point(40, 40),
-                Text = title + " - Coming Soon"
-            };
-
-            page.Controls.Add(label);
-            return page;
+                if (settingsForm.ShowDialog(this) == DialogResult.OK)
+                {
+                    // در صورت نیاز به رفرش یا اعمال تغییرات فوری در صفحه فعال
+                }
+            }
         }
 
         private void btnCurrentData_Click(object sender, EventArgs e)

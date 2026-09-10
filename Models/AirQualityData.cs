@@ -22,6 +22,7 @@ namespace AshkanAQMS.Models
         public int AQI { get; set; }
         public string AQICategory { get; set; } = "Unknown";
         public string DominantPollutant { get; set; } = string.Empty;
+        public int OverallAqi { get; internal set; }
 
         public AirQualityData()
         {
