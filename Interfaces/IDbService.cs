@@ -1,12 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using AshkanAQMS.Models;
 
 namespace AshkanAQMS.Interfaces
 {
-    internal class IDbService
+    public interface IDbService
     {
+        void SaveLog(SensorLog log);
+        List<SensorLog> GetAllLogs();
+        List<SensorLog> GetLogs(DateTime from, DateTime to);
+        void ClearAllLogs();
+        string GetStoragePath();
     }
 }

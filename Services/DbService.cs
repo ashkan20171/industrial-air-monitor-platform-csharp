@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -8,7 +8,7 @@ using AshkanAQMS.Models;
 
 namespace AshkanAQMS.Services
 {
-    internal class DbService
+    public class DbService : AshkanAQMS.Interfaces.IDbService
     {
         private static readonly object SyncRoot = new object();
 
@@ -21,7 +21,7 @@ namespace AshkanAQMS.Services
         private static readonly string StoragePath =
             Path.Combine(StorageDirectory, StorageFileName);
 
-        private const string CsvHeader = "Timestamp,AnalyzerId,PM25,CO2,AQI,Status";
+        private const string CsvHeader = "Timestamp,AnalyzerId,PM25,PM10,CO2,NO2,Temperature,Humidity,AQI,Status";
 
         public void SaveLog(SensorLog log)
         {
@@ -69,7 +69,8 @@ namespace AshkanAQMS.Services
 
                     try
                     {
-                        result.Add(SensorLog.FromCsvLine(line));
+                        var parsed = SensorLog.FromCsvLine(line);
+                        if (parsed != null) result.Add(parsed);
                     }
                     catch
                     {

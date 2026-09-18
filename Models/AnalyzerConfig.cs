@@ -1,4 +1,6 @@
-﻿using System;
+using System;
+using System.IO.Ports;
+using System.Xml.Serialization;
 
 namespace AshkanAQMS.Models
 {
@@ -11,6 +13,21 @@ namespace AshkanAQMS.Models
         public string Unit { get; set; } = "µg/m³"; // µg/m³, ppm, %
         public int Channel { get; set; } = 1;
         public int DecimalDigits { get; set; } = 1; // فرم تنظیم ممیز/اعشار
+        public bool Enabled { get; set; } = true;
+        public string DeviceId { get; set; } = "1";
+        public int RequestIntervalMs { get; set; } = 1000;
+        public int TimeoutMs { get; set; } = 2000;
+        public int DataBits { get; set; } = 8;
+        public Parity Parity { get; set; } = Parity.None;
+        public StopBits StopBits { get; set; } = StopBits.One;
+        public double Gain { get; set; } = 1.0;
+        public double Offset { get; set; } = 0.0;
+        public string Username { get; set; } = string.Empty;
+        [XmlElement("ProtectedPassword")]
+        public string ProtectedPassword { get; set; } = string.Empty;
+        [XmlIgnore]
+        public string Password { get; set; } = string.Empty;
+        public string IgnorableErrors { get; set; } = string.Empty;
 
         // تنظیمات اتصال
         public string ConnectionType { get; set; } = "COM"; // COM or IP

@@ -52,6 +52,12 @@
         "net48": {
           "framework": "net48",
           "targetAlias": "net48",
+          "dependencies": {
+            "System.Security.Cryptography.ProtectedData": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            }
+          },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400\\RuntimeIdentifierGraph.json"
         }
       },

@@ -20,9 +20,14 @@ namespace AshkanAQMS
         {
             this.pnlSidebar = new System.Windows.Forms.Panel();
             this.btnSettings = new System.Windows.Forms.Button();
+            this.btnAbout = new System.Windows.Forms.Button();
+            this.btnFeatures = new System.Windows.Forms.Button();
             this.btnReports = new System.Windows.Forms.Button();
             this.btnAnalyzers = new System.Windows.Forms.Button();
             this.btnCurrentData = new System.Windows.Forms.Button();
+            this.btnDiagnostics = new System.Windows.Forms.Button();
+            this.btnAlarms = new System.Windows.Forms.Button();
+            this.btnRemote = new System.Windows.Forms.Button();
             this.lblLogo = new System.Windows.Forms.Label();
             this.pnlTopBar = new System.Windows.Forms.Panel();
             this.lblSubtitle = new System.Windows.Forms.Label();
@@ -35,7 +40,12 @@ namespace AshkanAQMS
             // pnlSidebar
             // 
             this.pnlSidebar.BackColor = System.Drawing.Color.FromArgb(31, 42, 54);
+            this.pnlSidebar.Controls.Add(this.btnAbout);
+            this.pnlSidebar.Controls.Add(this.btnDiagnostics);
+            this.pnlSidebar.Controls.Add(this.btnAlarms);
+            this.pnlSidebar.Controls.Add(this.btnRemote);
             this.pnlSidebar.Controls.Add(this.btnSettings);
+            this.pnlSidebar.Controls.Add(this.btnFeatures);
             this.pnlSidebar.Controls.Add(this.btnReports);
             this.pnlSidebar.Controls.Add(this.btnAnalyzers);
             this.pnlSidebar.Controls.Add(this.btnCurrentData);
@@ -46,6 +56,78 @@ namespace AshkanAQMS
             this.pnlSidebar.Size = new System.Drawing.Size(230, 760);
             this.pnlSidebar.TabIndex = 0;
             // 
+            // btnRemote
+            this.btnRemote.FlatAppearance.BorderSize = 0;
+            this.btnRemote.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRemote.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.btnRemote.ForeColor = System.Drawing.Color.White;
+            this.btnRemote.Location = new System.Drawing.Point(12, 370);
+            this.btnRemote.Name = "btnRemote";
+            this.btnRemote.Size = new System.Drawing.Size(206, 48);
+            this.btnRemote.TabIndex = 10;
+            this.btnRemote.Text = "Remote Operations";
+            this.btnRemote.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnRemote.UseVisualStyleBackColor = true;
+            this.btnRemote.Click += new System.EventHandler(this.btnRemote_Click);
+
+            // btnAlarms
+            this.btnAlarms.FlatAppearance.BorderSize = 0;
+            this.btnAlarms.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAlarms.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.btnAlarms.ForeColor = System.Drawing.Color.White;
+            this.btnAlarms.Location = new System.Drawing.Point(12, 424);
+            this.btnAlarms.Name = "btnAlarms";
+            this.btnAlarms.Size = new System.Drawing.Size(206, 48);
+            this.btnAlarms.TabIndex = 6;
+            this.btnAlarms.Text = "Alarm History";
+            this.btnAlarms.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnAlarms.UseVisualStyleBackColor = true;
+            this.btnAlarms.Click += new System.EventHandler(this.btnAlarms_Click);
+            //
+            // btnDiagnostics
+            //
+            this.btnDiagnostics.FlatAppearance.BorderSize = 0;
+            this.btnDiagnostics.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnDiagnostics.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.btnDiagnostics.ForeColor = System.Drawing.Color.White;
+            this.btnDiagnostics.Location = new System.Drawing.Point(12, 478);
+            this.btnDiagnostics.Name = "btnDiagnostics";
+            this.btnDiagnostics.Size = new System.Drawing.Size(206, 48);
+            this.btnDiagnostics.TabIndex = 8;
+            this.btnDiagnostics.Text = "System Diagnostics";
+            this.btnDiagnostics.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnDiagnostics.UseVisualStyleBackColor = true;
+            this.btnDiagnostics.Click += new System.EventHandler(this.btnDiagnostics_Click);
+            //
+            // btnFeatures
+            // 
+            this.btnFeatures.FlatAppearance.BorderSize = 0;
+            this.btnFeatures.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnFeatures.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.btnFeatures.ForeColor = System.Drawing.Color.White;
+            this.btnFeatures.Location = new System.Drawing.Point(12, 316);
+            this.btnFeatures.Name = "btnFeatures";
+            this.btnFeatures.Size = new System.Drawing.Size(206, 48);
+            this.btnFeatures.TabIndex = 5;
+            this.btnFeatures.Text = "Feature Center";
+            this.btnFeatures.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnFeatures.UseVisualStyleBackColor = true;
+            this.btnFeatures.Click += new System.EventHandler(this.btnFeatures_Click);
+            // 
+            // btnAbout
+            this.btnAbout.FlatAppearance.BorderSize = 0;
+            this.btnAbout.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAbout.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.btnAbout.ForeColor = System.Drawing.Color.White;
+            this.btnAbout.Location = new System.Drawing.Point(12, 532);
+            this.btnAbout.Name = "btnAbout";
+            this.btnAbout.Size = new System.Drawing.Size(206, 48);
+            this.btnAbout.TabIndex = 9;
+            this.btnAbout.Text = "About";
+            this.btnAbout.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnAbout.UseVisualStyleBackColor = true;
+            this.btnAbout.Click += new System.EventHandler(this.btnAbout_Click);
+
             // btnSettings
             // 
             this.btnSettings.FlatAppearance.BorderSize = 0;
@@ -187,7 +269,12 @@ namespace AshkanAQMS
         private System.Windows.Forms.Button btnCurrentData;
         private System.Windows.Forms.Button btnAnalyzers;
         private System.Windows.Forms.Button btnReports;
+        private System.Windows.Forms.Button btnAbout;
         private System.Windows.Forms.Button btnSettings;
+        private System.Windows.Forms.Button btnFeatures;
+        private System.Windows.Forms.Button btnAlarms;
+        private System.Windows.Forms.Button btnRemote;
+        private System.Windows.Forms.Button btnDiagnostics;
         private System.Windows.Forms.Label lblLogo;
     }
 }

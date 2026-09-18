@@ -8,104 +8,84 @@ namespace AshkanAQMS
 {
     public partial class SettingsForm : Form
     {
-        private AppSettings _settings;
-
-        // کنترل‌های ورودی عددی
-        private NumericUpDown numInterval;
-        private NumericUpDown numZScore;
-        private NumericUpDown numAlpha;
-        private NumericUpDown numHistoryLimit;
+        private readonly StorageService _storageService;
+        public AppSettings CurrentSettings { get; private set; }
 
         public SettingsForm()
         {
             InitializeComponent();
-            SetupDynamicControls();
-            LoadCurrentSettings();
+            _storageService = new StorageService();
+
+            // بارگذاری تنظیمات یا ایجاد پیش‌فرض
+            CurrentSettings = _storageService.LoadSettings() ?? new AppSettings();
+
+            // اعمال تم صنعتی تیره
             IndustrialTheme.ApplyDarkTheme(this);
+
+            // بارگذاری مقادیر در کنترل‌های فرم
+            LoadSettingsToUi();
         }
 
-        private void SetupDynamicControls()
+        private void LoadSettingsToUi()
         {
-            grpAi.ForeColor = IndustrialTheme.TextSecondary;
-            grpAlerts.ForeColor = IndustrialTheme.TextSecondary;
-            chkEnableSound.ForeColor = IndustrialTheme.TextPrimary;
-            chkEnableAutoArchive.ForeColor = IndustrialTheme.TextPrimary;
-            btnReset.ForeColor = IndustrialTheme.TextSecondary;
+            if (CurrentSettings == null) return;
 
-            numInterval = AddNumericRow(grpAi, "بازه به‌روزرسانی سنسورها (ثانیه):", 1, 60, 30);
-            numZScore = AddNumericRow(grpAi, "آستانه ناهنجاری سنسور (Z-Score):", 1.0M, 5.0M, 65, 0.1M);
-            numAlpha = AddNumericRow(grpAi, "ضریب هموارسازی پیش‌بینی (EMA Alpha):", 0.05M, 0.95M, 100, 0.05M);
-            numHistoryLimit = AddNumericRow(grpAi, "حجم پنجره تحلیل تاریخچه:", 5, 100, 135);
-        }
+            // تنظیمات عمومی و هشدارها
+            chkEnableSound.Checked = CurrentSettings.EnableSoundAlerts;
+            chkEnableAutoArchive.Checked = CurrentSettings.EnableAutoArchive;
 
-        private NumericUpDown AddNumericRow(GroupBox parent, string labelText, decimal min, decimal max, int top, decimal increment = 1M)
-        {
-            var lbl = new Label
-            {
-                Text = labelText,
-                ForeColor = IndustrialTheme.TextPrimary,
-                Location = new Point(15, top + 3),
-                Width = 260,
-                AutoSize = false
-            };
-            var num = new NumericUpDown
-            {
-                Location = new Point(290, top),
-                Width = 115,
-                Minimum = min,
-                Maximum = max,
-                Increment = increment,
-                DecimalPlaces = increment < 1M ? 2 : 0,
-                BackColor = IndustrialTheme.SurfaceCard,
-                ForeColor = IndustrialTheme.TextPrimary
-            };
-            parent.Controls.Add(lbl);
-            parent.Controls.Add(num);
-            return num;
-        }
-
-        private void LoadCurrentSettings()
-        {
-            _settings = StorageService.LoadSettings();
-            BindSettingsToInputs();
-        }
-
-        private void BindSettingsToInputs()
-        {
-            if (_settings == null) _settings = new AppSettings();
-
-            numInterval.Value = Math.Max(numInterval.Minimum, Math.Min(numInterval.Maximum, _settings.PollingIntervalSeconds));
-            numZScore.Value = Math.Max(numZScore.Minimum, Math.Min(numZScore.Maximum, (decimal)_settings.AnomalyZScoreThreshold));
-            numAlpha.Value = Math.Max(numAlpha.Minimum, Math.Min(numAlpha.Maximum, (decimal)_settings.EmaAlpha));
-            numHistoryLimit.Value = Math.Max(numHistoryLimit.Minimum, Math.Min(numHistoryLimit.Maximum, _settings.HistoryWindowSize));
-            chkEnableSound.Checked = _settings.EnableSoundAlerts;
-            chkEnableAutoArchive.Checked = _settings.EnableAutoArchive;
+            // تنظیمات داده و موتور هوش مصنوعی
+            numPollingInterval.Value = Math.Max(numPollingInterval.Minimum, Math.Min(numPollingInterval.Maximum, CurrentSettings.PollingIntervalSeconds));
+            numHistoryWindowSize.Value = Math.Max(numHistoryWindowSize.Minimum, Math.Min(numHistoryWindowSize.Maximum, CurrentSettings.HistoryWindowSize));
+            numZScoreThreshold.Value = Math.Max(numZScoreThreshold.Minimum, Math.Min(numZScoreThreshold.Maximum, (decimal)CurrentSettings.AnomalyZScoreThreshold));
+            numEmaAlpha.Value = Math.Max(numEmaAlpha.Minimum, Math.Min(numEmaAlpha.Maximum, (decimal)CurrentSettings.EmaAlpha));
         }
 
         private void BtnSave_Click(object sender, EventArgs e)
         {
             try
             {
-                _settings.PollingIntervalSeconds = (int)numInterval.Value;
-                _settings.AnomalyZScoreThreshold = (double)numZScore.Value;
-                _settings.EmaAlpha = (double)numAlpha.Value;
-                _settings.HistoryWindowSize = (int)numHistoryLimit.Value;
-                _settings.EnableSoundAlerts = chkEnableSound.Checked;
-                _settings.EnableAutoArchive = chkEnableAutoArchive.Checked;
+                // خواندن مقادیر از UI
+                CurrentSettings.EnableSoundAlerts = chkEnableSound.Checked;
+                CurrentSettings.EnableAutoArchive = chkEnableAutoArchive.Checked;
 
-                StorageService.SaveSettings(_settings);
+                CurrentSettings.PollingIntervalSeconds = (int)numPollingInterval.Value;
+                CurrentSettings.HistoryWindowSize = (int)numHistoryWindowSize.Value;
+                CurrentSettings.AnomalyZScoreThreshold = (double)numZScoreThreshold.Value;
+                CurrentSettings.EmaAlpha = (double)numEmaAlpha.Value;
+
+                // ذخیره‌سازی روی دیسک
+                _storageService.SaveSettings(CurrentSettings);
+
+                MessageBox.Show("تنظیمات با موفقیت ذخیره شد.", "ذخیره تنظیمات", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("خطا در ذخیره تنظیمات: " + ex.Message, "خطا", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"خطا در ذخیره تنظیمات:\n{ex.Message}", "خطا", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void BtnReset_Click(object sender, EventArgs e)
         {
-            _settings = new AppSettings();
-            BindSettingsToInputs();
+            var confirm = MessageBox.Show(
+                "آیا مطمئن هستید که می‌خواهید تمام تنظیمات به حالت پیش‌فرض بازگردانده شوند؟",
+                "بازنشانی تنظیمات",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirm == DialogResult.Yes)
+            {
+                CurrentSettings = new AppSettings();
+                LoadSettingsToUi();
+            }
+        }
+
+        private void BtnCancel_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.Cancel;
+            this.Close();
         }
     }
 }

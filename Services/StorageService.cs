@@ -1,38 +1,51 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Xml.Serialization;
 using AshkanAQMS.Models;
 
 namespace AshkanAQMS.Services
 {
-    public static class StorageService
+    public class StorageService
     {
-        private const string StorageFolderName = "AshkanAQMS";
-        private const string StorageFileName = "analyzers.xml";
+        private readonly string _folderPath;
+        private readonly string _analyzersFilePath;
+        private readonly string _settingsFilePath;
+        private readonly string _logFilePath;
 
-        private static readonly string StorageDirectory =
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), StorageFolderName);
-
-        private static readonly string StoragePath =
-            Path.Combine(StorageDirectory, StorageFileName);
-        private static readonly string SettingsFilePath = System.IO.Path.Combine(
-    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-    "AshkanAQMS",
-    "settings.xml"
-);
-
-        public static AppSettings LoadSettings()
+        public StorageService()
         {
+            _folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AshkanAQMS");
+            EnsureStorageDirectory();
+            _analyzersFilePath = Path.Combine(_folderPath, "analyzers.xml");
+            _settingsFilePath = Path.Combine(_folderPath, "settings.xml");
+            _logFilePath = Path.Combine(_folderPath, "archive_log.txt");
+        }
+
+        private void EnsureStorageDirectory()
+        {
+            if (!Directory.Exists(_folderPath))
+            {
+                Directory.CreateDirectory(_folderPath);
+            }
+        }
+
+        public AppSettings LoadSettings()
+        {
+            if (!File.Exists(_settingsFilePath))
+            {
+                var defaultSettings = new AppSettings();
+                SaveSettings(defaultSettings);
+                return defaultSettings;
+            }
+
             try
             {
-                if (!System.IO.File.Exists(SettingsFilePath))
-                    return new AppSettings();
-
-                var serializer = new System.Xml.Serialization.XmlSerializer(typeof(AppSettings));
-                using (var stream = new System.IO.FileStream(SettingsFilePath, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite))
+                XmlSerializer serializer = new XmlSerializer(typeof(AppSettings));
+                using (StreamReader reader = new StreamReader(_settingsFilePath))
                 {
-                    return (AppSettings)serializer.Deserialize(stream);
+                    return (AppSettings)serializer.Deserialize(reader);
                 }
             }
             catch
@@ -41,36 +54,34 @@ namespace AshkanAQMS.Services
             }
         }
 
-        public static void SaveSettings(AppSettings settings)
-        {
-            if (settings == null) throw new ArgumentNullException(nameof(settings));
-
-            var dir = System.IO.Path.GetDirectoryName(SettingsFilePath);
-            if (!string.IsNullOrEmpty(dir) && !System.IO.Directory.Exists(dir))
-                System.IO.Directory.CreateDirectory(dir);
-
-            var serializer = new System.Xml.Serialization.XmlSerializer(typeof(AppSettings));
-            using (var writer = new System.IO.StreamWriter(SettingsFilePath))
-            {
-                serializer.Serialize(writer, settings);
-            }
-        }
-
-        public static List<AnalyzerConfig> LoadAnalyzers()
+        public void SaveSettings(AppSettings settings)
         {
             try
             {
-                if (!File.Exists(StoragePath))
+                EnsureStorageDirectory();
+                XmlSerializer serializer = new XmlSerializer(typeof(AppSettings));
+                using (StreamWriter writer = new StreamWriter(_settingsFilePath))
                 {
-                    return new List<AnalyzerConfig>();
+                    serializer.Serialize(writer, settings);
                 }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error saving settings: " + ex.Message);
+            }
+        }
 
+        public List<AnalyzerConfig> LoadAnalyzers()
+        {
+            if (!File.Exists(_analyzersFilePath))
+                return new List<AnalyzerConfig>();
+
+            try
+            {
                 XmlSerializer serializer = new XmlSerializer(typeof(List<AnalyzerConfig>));
-
-                using (FileStream stream = File.Open(StoragePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (FileStream fs = new FileStream(_analyzersFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-                    object result = serializer.Deserialize(stream);
-                    return result as List<AnalyzerConfig> ?? new List<AnalyzerConfig>();
+                    return (List<AnalyzerConfig>)serializer.Deserialize(fs);
                 }
             }
             catch
@@ -79,40 +90,78 @@ namespace AshkanAQMS.Services
             }
         }
 
-        public static void SaveAnalyzers(List<AnalyzerConfig> analyzers)
+        public void SaveAnalyzers(List<AnalyzerConfig> analyzers)
         {
-            if (analyzers == null)
-            {
-                analyzers = new List<AnalyzerConfig>();
-            }
+            EnsureStorageDirectory();
+            if (analyzers == null) analyzers = new List<AnalyzerConfig>();
 
+            string tempPath = _analyzersFilePath + ".tmp";
+            string backupPath = _analyzersFilePath + ".bak";
             try
             {
-                EnsureStorageDirectory();
-
                 XmlSerializer serializer = new XmlSerializer(typeof(List<AnalyzerConfig>));
-
-                using (FileStream stream = File.Create(StoragePath))
-                {
-                    serializer.Serialize(stream, analyzers);
-                }
+                using (var writer = new StreamWriter(tempPath, false, Encoding.UTF8)) serializer.Serialize(writer, analyzers);
+                if (File.Exists(_analyzersFilePath)) File.Copy(_analyzersFilePath, backupPath, true);
+                if (File.Exists(_analyzersFilePath)) File.Replace(tempPath, _analyzersFilePath, backupPath, true);
+                else File.Move(tempPath, _analyzersFilePath);
             }
-            catch
+            catch (Exception ex)
             {
+                try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { }
+                System.Diagnostics.Debug.WriteLine("Error saving analyzers: " + ex.Message);
                 throw;
             }
         }
 
-        public static string GetStoragePath()
+        public string GetAnalyzerBackupFolder()
         {
-            return StoragePath;
+            string folder = Path.Combine(_folderPath, "backups");
+            Directory.CreateDirectory(folder);
+            return folder;
         }
 
-        private static void EnsureStorageDirectory()
+        public void AppendArchiveLog(string message)
         {
-            if (!Directory.Exists(StorageDirectory))
+            try
             {
-                Directory.CreateDirectory(StorageDirectory);
+                EnsureStorageDirectory();
+                string logLine = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}{Environment.NewLine}";
+                File.AppendAllText(_logFilePath, logLine, Encoding.UTF8);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error writing archive log: " + ex.Message);
+            }
+        }
+
+        public bool ExportToCsv(List<string> headers, List<List<string>> rows, string filePath)
+        {
+            try
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine(string.Join(",", headers));
+
+                foreach (var row in rows)
+                {
+                    List<string> escapedCells = new List<string>();
+                    foreach (var cell in row)
+                    {
+                        string val = cell ?? "";
+                        if (val.Contains(",") || val.Contains("\"") || val.Contains("\n"))
+                        {
+                            val = "\"" + val.Replace("\"", "\"\"") + "\"";
+                        }
+                        escapedCells.Add(val);
+                    }
+                    sb.AppendLine(string.Join(",", escapedCells));
+                }
+
+                File.WriteAllText(filePath, sb.ToString(), Encoding.UTF8);
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
     }
