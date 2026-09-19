@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO.Ports;
-using System.Net.Sockets;
 using System.IO;
+using System.IO.Ports;
 using System.Linq;
 using System.Windows.Forms;
 using AshkanAQMS.Models;
@@ -45,6 +44,10 @@ namespace AshkanAQMS
             var validate = new Button { Text = "Validate All", Width = 150, Height = 34, Left = 10, Top = 205, FlatStyle = FlatStyle.Flat, BackColor = Color.FromArgb(52, 73, 94), ForeColor = Color.White };
             validate.Click += (s, e) => ValidateAllConfigurations();
             pnlActions.Controls.Add(validate);
+
+            var toggle = new Button { Text = "Enable / Disable", Width = 150, Height = 34, Left = 10, Top = 250, FlatStyle = FlatStyle.Flat, BackColor = Color.FromArgb(230, 126, 34), ForeColor = Color.White };
+            toggle.Click += (s, e) => ToggleSelectedAnalyzer();
+            pnlActions.Controls.Add(toggle);
         }
 
         private void ValidateAllConfigurations()
@@ -91,11 +94,8 @@ namespace AshkanAQMS
             {
                 _analyzers = _storageService.LoadAnalyzers();
                 if (_analyzers == null) _analyzers = new List<AnalyzerConfig>();
-                if (_analyzers.Count == 0)
-                {
-                    LoadDefaultAnalyzers();
-                    SaveAnalyzers();
-                }
+                // An empty configuration is intentional. Do not create COM1/IP demo devices.
+                // Real hardware must be explicitly configured by the operator.
             }
             catch (Exception ex)
             {
@@ -108,27 +108,7 @@ namespace AshkanAQMS
 
         private void LoadDefaultAnalyzers()
         {
-            _analyzers.Add(new AnalyzerConfig
-            {
-                Name = "PM2.5 Primary Analyzer",
-                Model = "Thermo 5012",
-                GasType = "PM2.5",
-                Unit = "µg/m³",
-                ConnectionType = "COM",
-                ComPort = "COM1",
-                BaudRate = 9600
-            });
-
-            _analyzers.Add(new AnalyzerConfig
-            {
-                Name = "Stack CO2 Analyzer",
-                Model = "Siemens Ultramat",
-                GasType = "CO2",
-                Unit = "ppm",
-                ConnectionType = "IP",
-                IpAddress = "192.168.1.110",
-                IpPort = 502
-            });
+            // Intentionally empty. AQMS never invents a hardware endpoint.
         }
 
         private bool SaveAnalyzers()
@@ -168,7 +148,7 @@ namespace AshkanAQMS
 
                 dgvAnalyzers.Rows.Add(
                     analyzer.Id,
-                    analyzer.Name,
+                    (analyzer.Enabled ? "[ENABLED] " : "[DISABLED] ") + analyzer.Name,
                     analyzer.Model,
                     analyzer.GasType,
                     analyzer.Unit,
@@ -250,6 +230,31 @@ namespace AshkanAQMS
             }
         }
 
+        private void ToggleSelectedAnalyzer()
+        {
+            if (dgvAnalyzers.CurrentRow == null)
+            {
+                MessageBox.Show("Select an analyzer first.", "Analyzer State", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            string id = dgvAnalyzers.CurrentRow.Cells["colId"].Value?.ToString();
+            var target = _analyzers.Find(a => a.Id == id);
+            if (target == null) return;
+
+            target.Enabled = !target.Enabled;
+            if (!SaveAnalyzers())
+            {
+                target.Enabled = !target.Enabled;
+                return;
+            }
+
+            RefreshGrid();
+            lblDiagnosticStatus.Text = target.Name + (target.Enabled ? " enabled. Acquisition will resume." : " disabled. Acquisition is stopped immediately.");
+            lblDiagnosticStatus.ForeColor = target.Enabled ? Color.FromArgb(39,174,96) : Color.FromArgb(230,126,34);
+            new AuditLogger().Write("ANALYZER_STATE", target.Name + " | " + (target.Enabled ? "ENABLED" : "DISABLED"));
+        }
+
         private void btnTestConnection_Click(object sender, EventArgs e)
         {
             if (dgvAnalyzers.CurrentRow == null)
@@ -263,72 +268,36 @@ namespace AshkanAQMS
             var target = _analyzers.Find(a => a.Id == id);
             if (target == null) return;
 
-            bool isSuccess;
-            string errorMessage;
-
-            if (target.ConnectionType == "COM")
-                isSuccess = TestSerialPort(target.ComPort, target.BaudRate, out errorMessage);
-            else
-                isSuccess = TestNetworkConnection(target.IpAddress, target.IpPort, out errorMessage);
-
-            if (isSuccess)
+            try
             {
-                lblDiagnosticStatus.Text = "Connection successful.";
-                lblDiagnosticStatus.ForeColor = Color.FromArgb(39, 174, 96);
-                MessageBox.Show("Connection test was successful.", "Test Connection",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (!target.Enabled)
+                {
+                    MessageBox.Show("This analyzer is disabled. Enable it before testing live acquisition.", "Test Connection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                var reader = new RealAnalyzerReader();
+                var reading = reader.ReadAsync(target, System.Threading.CancellationToken.None).GetAwaiter().GetResult();
+                if (reading.IsUsable)
+                {
+                    lblDiagnosticStatus.Text = string.Format("Live sample OK: {0:0.###} {1}", reading.Value, target.Unit);
+                    lblDiagnosticStatus.ForeColor = Color.FromArgb(39, 174, 96);
+                    MessageBox.Show(string.Format("Live acquisition succeeded.\n\nValue: {0:0.###} {1}\nResponse time: {2} ms\nRaw response: {3}", reading.Value, target.Unit, reading.ResponseTimeMs, reading.RawResponse), "Real Analyzer Test", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    lblDiagnosticStatus.Text = "Acquisition failed: " + reading.Quality;
+                    lblDiagnosticStatus.ForeColor = Color.FromArgb(231, 76, 60);
+                    MessageBox.Show(reading.Message, "Real Analyzer Test Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                lblDiagnosticStatus.Text = "Connection failed.";
+                lblDiagnosticStatus.Text = "Acquisition test failed.";
                 lblDiagnosticStatus.ForeColor = Color.FromArgb(231, 76, 60);
-                MessageBox.Show(errorMessage, "Test Connection Failed",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(ex.Message, "Real Analyzer Test Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
-        private bool TestSerialPort(string portName, int baudRate, out string errorMessage)
-        {
-            errorMessage = string.Empty;
-            try
-            {
-                using (SerialPort port = new SerialPort(portName, baudRate, Parity.None, 8, StopBits.One))
-                {
-                    port.Open();
-                    port.Close();
-                }
-                return true;
-            }
-            catch (Exception ex)
-            {
-                errorMessage = "Serial port test failed: " + ex.Message;
-                return false;
-            }
-        }
-
-        private bool TestNetworkConnection(string ipAddress, int port, out string errorMessage)
-        {
-            errorMessage = string.Empty;
-            try
-            {
-                using (TcpClient client = new TcpClient())
-                {
-                    IAsyncResult result = client.BeginConnect(ipAddress, port, null, null);
-                    bool success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(2));
-                    if (!success)
-                    {
-                        errorMessage = "Network connection timed out.";
-                        return false;
-                    }
-                    client.EndConnect(result);
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                errorMessage = "Network connection failed: " + ex.Message;
-                return false;
-            }
-        }
     }
 }

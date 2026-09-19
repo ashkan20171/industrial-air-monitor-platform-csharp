@@ -4,6 +4,8 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
+using System.Threading;
+using System.Threading.Tasks;
 using AshkanAQMS.Models;
 using AshkanAQMS.Services;
 
@@ -14,9 +16,10 @@ namespace AshkanAQMS.Controls
         private readonly List<SensorSnapshot> _history = new List<SensorSnapshot>();
         private readonly StorageService _storageService = new StorageService();
         private readonly IoTDataGenerator _generator = new IoTDataGenerator();
+        private readonly AnalyzerAcquisitionService _acquisitionService = new AnalyzerAcquisitionService();
         private readonly AlarmEngine _alarmEngine = new AlarmEngine();
         private readonly AiService _aiService = new AiService();
-        private Timer _monitorTimer;
+        private System.Windows.Forms.Timer _monitorTimer;
         private bool _isRunning;
         private AirQualityData _lastData;
         private AppSettings _settings;
@@ -31,6 +34,8 @@ namespace AshkanAQMS.Controls
         private Label _aiInsightLabel;
         private Label _healthLabel;
         private const int MaxHistoryItems = 240;
+        private bool _acquisitionBusy;
+        private CancellationTokenSource _acquisitionCancellation = new CancellationTokenSource();
 
         public class SensorSnapshot
         {
@@ -54,9 +59,15 @@ namespace AshkanAQMS.Controls
             CreateInsightPanel();
             CreateExecutiveTools();
             _alarmEngine.AlarmRaised += AlarmEngine_AlarmRaised;
-            Disposed += (s, e) => { if (_monitorTimer != null) { _monitorTimer.Stop(); _monitorTimer.Dispose(); } };
+            Disposed += (s, e) =>
+            {
+                if (_monitorTimer != null) { _monitorTimer.Stop(); _monitorTimer.Dispose(); }
+                try { _acquisitionCancellation.Cancel(); } catch { }
+                try { _acquisitionCancellation.Dispose(); } catch { }
+                _acquisitionService.Dispose();
+            };
             InitializeTimer();
-            GenerateAndDisplaySnapshot();
+            _ = GenerateAndDisplaySnapshotAsync();
         }
 
         private void ApplyProfessionalTheme()
@@ -144,67 +155,162 @@ namespace AshkanAQMS.Controls
 
         private void InitializeTimer()
         {
-            _monitorTimer = new Timer { Interval = Math.Max(1000, _settings.PollingIntervalSeconds * 1000) };
+            _monitorTimer = new System.Windows.Forms.Timer { Interval = Math.Max(1000, _settings.PollingIntervalSeconds * 1000) };
             _monitorTimer.Tick += MonitorTimer_Tick;
             _isRunning = true;
             _monitorTimer.Start();
             if (btnStartStop != null) { btnStartStop.Text = "Pause Monitoring"; btnStartStop.BackColor = Color.FromArgb(192,57,43); }
         }
 
-        private void MonitorTimer_Tick(object sender, EventArgs e) => GenerateAndDisplaySnapshot();
-
-        private void GenerateAndDisplaySnapshot()
+        private async void MonitorTimer_Tick(object sender, EventArgs e)
         {
-            var previous = _lastData ?? _generator.GetInitial(_settings.StationName);
-            var data = _generator.GenerateNext(_settings.StationName, previous);
-            data.CalculateAQI();
-            _lastData = data;
+            await GenerateAndDisplaySnapshotAsync();
+        }
 
-            _aiService.UpdateParameters(_settings.EmaAlpha, _settings.AnomalyZScoreThreshold);
-            var recent = _history.Select(x => x.PM25).Take(Math.Max(3, _settings.HistoryWindowSize)).ToList();
-            var ai = _settings.EnableAiInsights ? _aiService.Analyze(data.PM25, recent, data.IsValid) : new AiAnalysisResult { Ema = data.PM25, Forecast = data.PM25, Confidence = 0, Trend = "Disabled", Insight = "Local AI insights are disabled." };
-            var quality = DataQualityService.Assess(data);
-            var anomaly = ai.IsAnomaly;
-            _dataHistory.Insert(0, data);
-            if (_dataHistory.Count > MaxHistoryItems) _dataHistory.RemoveAt(_dataHistory.Count - 1);
-            var advanced = _settings.EnableAdvancedAnalytics ? _advancedAnalytics.Analyze(data, _dataHistory.Skip(1)) : new AnalyticsSummary { OverallTrend = "Disabled", Recommendation = "Advanced analytics disabled." };
-
-            var snapshot = new SensorSnapshot { Timestamp=data.Timestamp, PM25=data.PM25, PM10=data.PM10, CO2=data.CO2, NO2=data.NO2, Temperature=data.Temperature, Humidity=data.Humidity, AQI=data.AQI, Category=data.AQICategory, DominantPollutant=data.DominantPollutant };
-            _history.Insert(0, snapshot);
-            if (_history.Count > MaxHistoryItems) _history.RemoveAt(_history.Count - 1);
-
-            UpdateDashboard(data, ai.Ema, anomaly, ai);
-            if (_aiInsightLabel != null) { _aiInsightLabel.Visible = _settings.EnableAiInsights; _aiInsightLabel.Text = string.Format("AI • Trend: {0} • Forecast: {1:0.0} µg/m³ • Confidence: {2:0}% • Data quality: {3}%  |  {4}", ai.Trend, ai.Forecast, ai.Confidence, quality.Score, ai.Insight); }
-            if (_healthLabel != null && _settings.EnableHealthMonitoring) { var health = _healthMonitor.Capture(); var uptime = DateTime.Now - _monitoringStarted; _healthLabel.Text = string.Format("System {0}  •  RAM {1:0} MB  •  CPU {2:0.0}%  •  Uptime {3:00}:{4:00}:{5:00}", health.Status, health.WorkingSetMb, health.CpuTimeSeconds, (int)uptime.TotalHours, uptime.Minutes, uptime.Seconds); }
-            if (_analyticsLabel != null && _settings.EnableAdvancedAnalytics) _analyticsLabel.Text = string.Format("AI Risk: {0}% ({1})  •  Forecast PM2.5: {2:0.0} µg/m³  •  Recommendation: {3}", advanced.OverallRiskScore, advanced.OverallTrend, advanced.Pm25Forecast, advanced.Recommendation);
-            if (_qualityLabel != null) _qualityLabel.Text = string.Format("Data Quality: {0}% • {1} • {2}", quality.Score, quality.Status, quality.Message);
-            AddSnapshotToGrid(snapshot);
-
+        private async Task GenerateAndDisplaySnapshotAsync()
+        {
+            if (_acquisitionBusy || IsDisposed) return;
+            _acquisitionBusy = true;
             try
             {
-                if (_settings.EnableAutoArchive)
-                    new DbService().SaveLog(new SensorLog { Timestamp=data.Timestamp, AnalyzerId="SIM-001", PM25=data.PM25, PM10=data.PM10, CO2=data.CO2, NO2=data.NO2, Temperature=data.Temperature, Humidity=data.Humidity, AQI=data.AQI, Status=data.AQICategory });
-            }
-            catch { /* monitoring must continue if archival storage is unavailable */ }
+                AirQualityData data;
+                string analyzerSummary;
 
-            _alarmCooldown++;
-            int every = Math.Max(1, _settings.AlarmEvaluationEveryNMeasurements);
-            if (_alarmCooldown >= every) { _alarmEngine.Evaluate(data, _settings); if (_settings.EnableAnomalyAlarms && anomaly) _alarmEngine.RaiseAnomaly("PM2.5", data.PM25, "AI anomaly detected in recent PM2.5 pattern"); _alarmCooldown = 0; }
-            if (pnlChartContainer != null) pnlChartContainer.Invalidate();
+                if (string.Equals(_settings.DataSourceMode, "Simulation", StringComparison.OrdinalIgnoreCase) && _settings.AllowSimulationMode)
+                {
+                    var previous = _lastData ?? _generator.GetInitial(_settings.StationName);
+                    data = _generator.GenerateNext(_settings.StationName, previous);
+                    analyzerSummary = "SIMULATION MODE";
+                }
+                else
+                {
+                    var analyzers = _storageService.LoadAnalyzers() ?? new List<AnalyzerConfig>();
+                    var cycle = await _acquisitionService.ReadCycleAsync(analyzers, _acquisitionCancellation.Token);
+                    // Re-read the enable state after acquisition. If an operator disabled an analyzer
+                    // while a serial/TCP request was already in flight, its response is discarded and
+                    // never reaches the dashboard, AQI, alarms or archive.
+                    var currentEnabledIds = new HashSet<string>(_storageService.LoadAnalyzers()
+                        .Where(x => x != null && x.Enabled)
+                        .Select(x => x.Id), StringComparer.OrdinalIgnoreCase);
+                    var acceptedReadings = cycle.Readings.Where(x => x != null && currentEnabledIds.Contains(x.AnalyzerId)).ToList();
+                    data = BuildAirQualityData(acceptedReadings);
+                    analyzerSummary = acceptedReadings.Count + "/" + currentEnabledIds.Count + " enabled analyzer reading(s) accepted.";
+
+                    if (cycle.SuccessfulReadingCount == 0)
+                    {
+                        ShowNoLiveData(analyzerSummary);
+                        return;
+                    }
+                }
+
+                data.CalculateAQI();
+                _lastData = data;
+
+                _aiService.UpdateParameters(_settings.EmaAlpha, _settings.AnomalyZScoreThreshold);
+                var recent = _history.Select(x => x.PM25).Where(IsFinite).Take(Math.Max(3, _settings.HistoryWindowSize)).ToList();
+                AiAnalysisResult ai;
+                if (_settings.EnableAiInsights && IsFinite(data.PM25))
+                    ai = _aiService.Analyze(data.PM25, recent, data.IsValid);
+                else
+                    ai = new AiAnalysisResult { Ema = data.PM25, Forecast = data.PM25, Confidence = 0, Trend = "No PM2.5", Insight = "No live PM2.5 measurement is available." };
+
+                var quality = DataQualityService.Assess(data);
+                var anomaly = ai.IsAnomaly;
+                _dataHistory.Insert(0, data);
+                if (_dataHistory.Count > MaxHistoryItems) _dataHistory.RemoveAt(_dataHistory.Count - 1);
+                var advanced = _settings.EnableAdvancedAnalytics ? _advancedAnalytics.Analyze(data, _dataHistory.Skip(1)) : new AnalyticsSummary { OverallTrend = "Disabled", Recommendation = "Advanced analytics disabled." };
+
+                var snapshot = new SensorSnapshot { Timestamp=data.Timestamp, PM25=data.PM25, PM10=data.PM10, CO2=data.CO2, NO2=data.NO2, Temperature=data.Temperature, Humidity=data.Humidity, AQI=data.AQI, Category=data.AQICategory, DominantPollutant=data.DominantPollutant };
+                _history.Insert(0, snapshot);
+                if (_history.Count > MaxHistoryItems) _history.RemoveAt(_history.Count - 1);
+
+                UpdateDashboard(data, ai.Ema, anomaly, ai);
+                if (_aiInsightLabel != null) { _aiInsightLabel.Visible = _settings.EnableAiInsights; _aiInsightLabel.Text = string.Format("{0}  •  AI: {1}  •  Quality: {2}%  •  {3}", analyzerSummary, ai.Trend, quality.Score, ai.Insight); }
+                if (_healthLabel != null && _settings.EnableHealthMonitoring) { var health = _healthMonitor.Capture(); var uptime = DateTime.Now - _monitoringStarted; _healthLabel.Text = string.Format("System {0}  •  RAM {1:0} MB  •  CPU {2:0.0}%  •  Uptime {3:00}:{4:00}:{5:00}", health.Status, health.WorkingSetMb, health.CpuTimeSeconds, (int)uptime.TotalHours, uptime.Minutes, uptime.Seconds); }
+                if (_analyticsLabel != null && _settings.EnableAdvancedAnalytics) _analyticsLabel.Text = string.Format("AI Risk: {0}% ({1})  •  Forecast PM2.5: {2:0.0} µg/m³  •  Recommendation: {3}", advanced.OverallRiskScore, advanced.OverallTrend, advanced.Pm25Forecast, advanced.Recommendation);
+                if (_qualityLabel != null) _qualityLabel.Text = string.Format("Data Quality: {0}% • {1} • {2}", quality.Score, quality.Status, quality.Message);
+                AddSnapshotToGrid(snapshot);
+
+                try
+                {
+                    if (_settings.EnableAutoArchive)
+                    {
+                        var enabled = _storageService.LoadAnalyzers().Where(x => x != null && x.Enabled).Select(x => x.Id).ToList();
+                        new DbService().SaveLog(new SensorLog { Timestamp=data.Timestamp, AnalyzerId=string.Join("|", enabled), PM25=data.PM25, PM10=data.PM10, CO2=data.CO2, NO2=data.NO2, Temperature=data.Temperature, Humidity=data.Humidity, AQI=data.AQI, Status=data.AQICategory });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (_settings.EnableAuditLogging) _auditLogger.Write("ARCHIVE_ERROR", ex.Message);
+                }
+
+                _alarmCooldown++;
+                int every = Math.Max(1, _settings.AlarmEvaluationEveryNMeasurements);
+                if (_alarmCooldown >= every)
+                {
+                    _alarmEngine.Evaluate(data, _settings);
+                    if (_settings.EnableAnomalyAlarms && anomaly && IsFinite(data.PM25)) _alarmEngine.RaiseAnomaly("PM2.5", data.PM25, "AI anomaly detected in recent PM2.5 pattern");
+                    _alarmCooldown = 0;
+                }
+                if (pnlChartContainer != null) pnlChartContainer.Invalidate();
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception ex)
+            {
+                if (_settings.EnableAuditLogging) _auditLogger.Write("ACQUISITION_ERROR", ex.ToString());
+                ShowNoLiveData("Acquisition error: " + ex.Message);
+            }
+            finally { _acquisitionBusy = false; }
         }
+
+        private AirQualityData BuildAirQualityData(IEnumerable<AnalyzerReading> readings)
+        {
+            var data = new AirQualityData { Timestamp = DateTime.Now, Location = _settings.StationName };
+            foreach (var reading in readings.Where(x => x != null && x.IsUsable))
+            {
+                switch ((reading.GasType ?? string.Empty).Trim().ToUpperInvariant())
+                {
+                    case "PM2.5": data.PM25 = reading.Value; break;
+                    case "PM10": data.PM10 = reading.Value; break;
+                    case "CO2": data.CO2 = reading.Value; break;
+                    case "NO2": data.NO2 = reading.Value; break;
+                    case "TEMPERATURE": data.Temperature = reading.Value; break;
+                    case "HUMIDITY": data.Humidity = reading.Value; break;
+                }
+            }
+            return data;
+        }
+
+        private void ShowNoLiveData(string reason)
+        {
+            if (lblTimestamp != null) lblTimestamp.Text = "NO LIVE DATA  •  " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "  •  " + _settings.StationName;
+            if (lblStatus != null) { lblStatus.Text = "OFFLINE / NO LIVE SAMPLE"; lblStatus.ForeColor = Color.OrangeRed; }
+            if (lblAQIValue != null) { lblAQIValue.Text = "--"; lblAQIValue.ForeColor = IndustrialTheme.TextPrimary; }
+            if (pnlAQIIndicator != null) pnlAQIIndicator.BackColor = IndustrialTheme.BorderColor;
+            if (lblDominantPollutant != null) lblDominantPollutant.Text = "Data source: REAL HARDWARE  •  " + reason;
+            if (lblPM25Value != null) lblPM25Value.Text = "--";
+            if (lblPM10Value != null) lblPM10Value.Text = "--";
+            if (lblCO2Value != null) lblCO2Value.Text = "--";
+            if (lblNO2Value != null) lblNO2Value.Text = "--";
+            if (lblTempValue != null) lblTempValue.Text = "--";
+            if (lblHumValue != null) lblHumValue.Text = "--";
+            if (_qualityLabel != null) _qualityLabel.Text = "Data Quality: 0% • No Data • " + reason;
+        }
+
+        private static bool IsFinite(double value) { return !double.IsNaN(value) && !double.IsInfinity(value); }
 
         private void UpdateDashboard(AirQualityData data, double ema, bool anomaly, AiAnalysisResult ai)
         {
             if (lblTimestamp != null) lblTimestamp.Text = $"Last update  •  {data.Timestamp:yyyy-MM-dd HH:mm:ss}  •  {_settings.StationName}";
-            if (lblAQIValue != null) lblAQIValue.Text = data.AQI.ToString(CultureInfo.InvariantCulture);
-            if (lblPM25Value != null) lblPM25Value.Text = $"{data.PM25:0.0} µg/m³";
-            if (lblPM10Value != null) lblPM10Value.Text = $"{data.PM10:0.0} µg/m³";
-            if (lblCO2Value != null) lblCO2Value.Text = $"{data.CO2:0} ppm";
-            if (lblNO2Value != null) lblNO2Value.Text = $"{data.NO2:0.0} ppb";
-            if (lblTempValue != null) lblTempValue.Text = $"{data.Temperature:0.0} °C";
-            if (lblHumValue != null) lblHumValue.Text = $"{data.Humidity:0.0} %";
-            var c = GetAqiColor(data.AQI);
-            if (lblStatus != null) lblStatus.Text = $"{data.AQICategory}   •   AI {ai.Trend}   •   forecast {ai.Forecast:0.0}" + (anomaly ? "   •   ANOMALY" : "");
+            if (lblAQIValue != null) lblAQIValue.Text = data.IsValid ? data.AQI.ToString(CultureInfo.InvariantCulture) : "--";
+            if (lblPM25Value != null) lblPM25Value.Text = FormatValue(data.PM25, "0.0") + " µg/m³";
+            if (lblPM10Value != null) lblPM10Value.Text = FormatValue(data.PM10, "0.0") + " µg/m³";
+            if (lblCO2Value != null) lblCO2Value.Text = FormatValue(data.CO2, "0") + " ppm";
+            if (lblNO2Value != null) lblNO2Value.Text = FormatValue(data.NO2, "0.0") + " ppb";
+            if (lblTempValue != null) lblTempValue.Text = FormatValue(data.Temperature, "0.0") + " °C";
+            if (lblHumValue != null) lblHumValue.Text = FormatValue(data.Humidity, "0.0") + " %";
+            var c = data.IsValid ? GetAqiColor(data.AQI) : IndustrialTheme.TextSecondary;
+            if (lblStatus != null) lblStatus.Text = (data.IsValid ? data.AQICategory : "LIVE DATA PARTIAL") + "   •   AI " + ai.Trend + (anomaly ? "   •   ANOMALY" : "");
             if (lblStatus != null) lblStatus.ForeColor = anomaly ? Color.OrangeRed : c;
             if (lblAQIValue != null) lblAQIValue.ForeColor = c;
             if (pnlAQIIndicator != null) pnlAQIIndicator.BackColor = c;
@@ -228,7 +334,7 @@ namespace AshkanAQMS.Controls
             dgvLogs.SuspendLayout();
             try
             {
-                dgvLogs.Rows.Insert(0, item.Timestamp.ToString("HH:mm:ss"), item.AQI, item.PM25.ToString("0.0"), item.CO2.ToString("0"), item.Temperature.ToString("0.0"), item.Humidity.ToString("0.0"));
+                dgvLogs.Rows.Insert(0, item.Timestamp.ToString("HH:mm:ss"), item.AQI, FormatValue(item.PM25,"0.0"), FormatValue(item.CO2,"0"), FormatValue(item.Temperature,"0.0"), FormatValue(item.Humidity,"0.0"));
                 while (dgvLogs.Rows.Count > 30) dgvLogs.Rows.RemoveAt(dgvLogs.Rows.Count - 1);
             }
             finally { dgvLogs.ResumeLayout(); }
@@ -238,7 +344,7 @@ namespace AshkanAQMS.Controls
         {
             var g=e.Graphics; g.SmoothingMode=System.Drawing.Drawing2D.SmoothingMode.AntiAlias; var r=pnlChartContainer.ClientRectangle;
             g.Clear(IndustrialTheme.SurfaceCard); if(_history.Count<2) return;
-            var d=_history.Take(40).Reverse().ToList(); float left=40, right=15, top=18, bottom=25; float w=r.Width-left-right, h=r.Height-top-bottom; double max=Math.Max(100,d.Max(x=>x.PM25)*1.2);
+            var d=_history.Where(x=>IsFinite(x.PM25)).Take(40).Reverse().ToList(); if(d.Count<2) return; float left=40, right=15, top=18, bottom=25; float w=r.Width-left-right, h=r.Height-top-bottom; double max=Math.Max(100,d.Max(x=>x.PM25)*1.2);
             using(var grid=new Pen(IndustrialTheme.BorderColor)) for(int i=0;i<=4;i++){float y=top+h*i/4f;g.DrawLine(grid,left,y,r.Width-right,y);}
             var pts=new PointF[d.Count]; for(int i=0;i<d.Count;i++) pts[i]=new PointF(left+w*i/(d.Count-1), (float)(top+h-(d[i].PM25/max)*h));
             using(var pen=new Pen(Color.FromArgb(52,152,219),2.5f)) g.DrawLines(pen,pts);
@@ -247,8 +353,27 @@ namespace AshkanAQMS.Controls
 
         private void btnStartStop_Click(object sender, EventArgs e)
         {
-            if (_isRunning) { _monitorTimer.Stop(); _isRunning=false; btnStartStop.Text="Resume Monitoring"; btnStartStop.BackColor=Color.FromArgb(39,174,96); }
-            else { _monitorTimer.Interval=Math.Max(1000,_settings.PollingIntervalSeconds*1000); _monitorTimer.Start(); _isRunning=true; btnStartStop.Text="Pause Monitoring"; btnStartStop.BackColor=Color.FromArgb(192,57,43); }
+            if (_isRunning)
+            {
+                _monitorTimer.Stop();
+                _isRunning = false;
+                try { _acquisitionCancellation.Cancel(); } catch { }
+                btnStartStop.Text = "Resume Monitoring";
+                btnStartStop.BackColor = Color.FromArgb(39,174,96);
+                if (_settings.EnableAuditLogging) _auditLogger.Write("MONITORING", "Paused by operator.");
+            }
+            else
+            {
+                try { _acquisitionCancellation.Dispose(); } catch { }
+                _acquisitionCancellation = new CancellationTokenSource();
+                _monitorTimer.Interval = Math.Max(1000,_settings.PollingIntervalSeconds*1000);
+                _monitorTimer.Start();
+                _isRunning = true;
+                btnStartStop.Text = "Pause Monitoring";
+                btnStartStop.BackColor = Color.FromArgb(192,57,43);
+                if (_settings.EnableAuditLogging) _auditLogger.Write("MONITORING", "Resumed by operator.");
+                _ = GenerateAndDisplaySnapshotAsync();
+            }
         }
 
         private void btnExport_Click(object sender, EventArgs e)
@@ -258,12 +383,13 @@ namespace AshkanAQMS.Controls
             if(sfd.ShowDialog(this)==DialogResult.OK)
             {
                 var headers=new List<string>{"Timestamp","AQI","PM2.5","PM10","CO2","NO2","Temperature","Humidity","Category"};
-                var rows=_history.Select(x=>new List<string>{x.Timestamp.ToString("yyyy-MM-dd HH:mm:ss"),x.AQI.ToString(),x.PM25.ToString("0.0"),x.PM10.ToString("0.0"),x.CO2.ToString("0"),x.NO2.ToString("0.0"),x.Temperature.ToString("0.0"),x.Humidity.ToString("0.0"),x.Category}).ToList();
+                var rows=_history.Select(x=>new List<string>{x.Timestamp.ToString("yyyy-MM-dd HH:mm:ss"),x.AQI.ToString(),FormatValue(x.PM25,"0.0"),FormatValue(x.PM10,"0.0"),FormatValue(x.CO2,"0"),FormatValue(x.NO2,"0.0"),FormatValue(x.Temperature,"0.0"),FormatValue(x.Humidity,"0.0"),x.Category}).ToList();
                 if(_storageService.ExportToCsv(headers,rows,sfd.FileName)) MessageBox.Show("Measurement export completed.","AQMS",MessageBoxButtons.OK,MessageBoxIcon.Information);
             }
         }
 
-        public void StopMonitoring() { if(_monitorTimer!=null) _monitorTimer.Stop(); _isRunning=false; _auditLogger.Write("MONITORING", "Stopped"); }
+        public void StopMonitoring() { if(_monitorTimer!=null) _monitorTimer.Stop(); _isRunning=false; try { _acquisitionCancellation.Cancel(); } catch { } _auditLogger.Write("MONITORING", "Stopped"); }
+        private static string FormatValue(double value, string format) { return IsFinite(value) ? value.ToString(format, CultureInfo.InvariantCulture) : "--"; }
         private static Color GetAqiColor(int aqi) { if(aqi<=50)return IndustrialTheme.StatusGood; if(aqi<=100)return IndustrialTheme.StatusModerate; if(aqi<=150)return IndustrialTheme.StatusUnhealthySensitive; if(aqi<=200)return IndustrialTheme.StatusUnhealthy; return IndustrialTheme.StatusHazardous; }
     }
 }

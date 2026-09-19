@@ -25,7 +25,18 @@ namespace AshkanAQMS.Services
         {
             AlarmSeverity current = AlarmSeverity.Info;
             string message = string.Empty;
-            if (double.IsNaN(value) || double.IsInfinity(value)) { current = AlarmSeverity.Critical; message = "Invalid sensor value"; }
+            if (double.IsNaN(value) || double.IsInfinity(value))
+            {
+                AlarmSeverity previousUnavailable;
+                if (_activeStates.TryGetValue(parameter, out previousUnavailable) && previousUnavailable != AlarmSeverity.Info)
+                {
+                    var clearedUnavailable = Create(parameter, value, AlarmSeverity.Info, "Measurement unavailable; threshold alarm cleared", unit);
+                    clearedUnavailable.IsAcknowledged = true;
+                    _activeStates.Remove(parameter);
+                    if (AlarmCleared != null) AlarmCleared(this, clearedUnavailable);
+                }
+                return;
+            }
             else if (value >= critical) { current = AlarmSeverity.Critical; message = "Critical threshold exceeded"; }
             else if (value >= warning) { current = AlarmSeverity.Warning; message = "Warning threshold exceeded"; }
 

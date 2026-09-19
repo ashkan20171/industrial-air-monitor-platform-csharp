@@ -31,9 +31,19 @@ namespace AshkanAQMS.Models
 
         // تنظیمات اتصال
         public string ConnectionType { get; set; } = "COM"; // COM or IP
-        public string ComPort { get; set; } = "COM1";
+        public string ComPort { get; set; } = string.Empty;
         public int BaudRate { get; set; } = 9600;
         public string IpAddress { get; set; } = "192.168.1.100";
         public int IpPort { get; set; } = 502; // Modbus TCP default
+
+        // Generic ASCII/text protocol settings. These allow real analyzers that
+        // expose a request/response value without inventing measurements.
+        public string RequestCommand { get; set; } = string.Empty;
+        public string ResponseDelimiter { get; set; } = "\r\n";
+        public int ResponseFieldIndex { get; set; } = 0;
+        public string ResponseKey { get; set; } = string.Empty;
+        public string ResponseRegex { get; set; } = string.Empty;
+        public int ReadAfterWriteDelayMs { get; set; } = 50;
+        public string EncodingName { get; set; } = "ASCII";
     }
 }

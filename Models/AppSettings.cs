@@ -6,6 +6,8 @@ namespace AshkanAQMS.Models
     public class AppSettings
     {
         public int PollingIntervalSeconds { get; set; } = 3;
+        public string DataSourceMode { get; set; } = "RealHardware"; // RealHardware or Simulation
+        public bool AllowSimulationMode { get; set; } = false;
         public double AnomalyZScoreThreshold { get; set; } = 2.5;
         public double EmaAlpha { get; set; } = 0.3;
         public int HistoryWindowSize { get; set; } = 50;

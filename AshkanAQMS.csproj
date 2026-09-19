@@ -9,8 +9,8 @@
     <LangVersion>latest</LangVersion>
     <Platforms>AnyCPU</Platforms>
     <ApplicationIcon />
-    <AssemblyVersion>2.7.0.0</AssemblyVersion>
-    <FileVersion>2.7.0.0</FileVersion>
+    <AssemblyVersion>2.8.4.0</AssemblyVersion>
+    <FileVersion>2.8.4.0</FileVersion>
     <Nullable>disable</Nullable>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>

@@ -27,6 +27,12 @@ namespace AshkanAQMS.Models
         public AirQualityData()
         {
             Timestamp = DateTime.Now;
+            PM25 = double.NaN;
+            PM10 = double.NaN;
+            CO2 = double.NaN;
+            NO2 = double.NaN;
+            Temperature = double.NaN;
+            Humidity = double.NaN;
         }
 
         public int CalculateAQI()

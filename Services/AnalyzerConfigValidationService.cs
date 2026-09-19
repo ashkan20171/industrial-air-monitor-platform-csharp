@@ -42,12 +42,23 @@ namespace AshkanAQMS.Services
             if (string.Equals(config.ConnectionType, "IP", StringComparison.OrdinalIgnoreCase))
             {
                 IPAddress address;
-                if (!IPAddress.TryParse(config.IpAddress, out address)) result.Errors.Add("A valid IP address is required.");
-                if (config.IpPort < 1 || config.IpPort > 65535) result.Errors.Add("TCP port must be between 1 and 65535.");
+                if (!IPAddress.TryParse(config.IpAddress, out address))
+                {
+                    if (config.Enabled) result.Errors.Add("A valid IP address is required.");
+                    else result.Warnings.Add("IP address is incomplete while the analyzer is disabled.");
+                }
+                if (config.IpPort < 1 || config.IpPort > 65535)
+                {
+                    if (config.Enabled) result.Errors.Add("TCP port must be between 1 and 65535.");
+                }
             }
             else
             {
-                if (string.IsNullOrWhiteSpace(config.ComPort)) result.Errors.Add("A COM port is required.");
+                if (string.IsNullOrWhiteSpace(config.ComPort))
+                {
+                    if (config.Enabled) result.Errors.Add("A COM port is required.");
+                    else result.Warnings.Add("COM port is not configured while the analyzer is disabled.");
+                }
                 else if (!SerialPort.GetPortNames().Contains(config.ComPort, StringComparer.OrdinalIgnoreCase)) result.Warnings.Add("The selected COM port is not currently present on this computer.");
                 if (config.BaudRate < 300 || config.BaudRate > 4000000) result.Errors.Add("Baud rate is outside the supported range.");
                 if (config.DataBits < 5 || config.DataBits > 8) result.Errors.Add("Data bits must be between 5 and 8.");

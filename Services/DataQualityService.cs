@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using AshkanAQMS.Models;
 
 namespace AshkanAQMS.Services
@@ -15,15 +16,35 @@ namespace AshkanAQMS.Services
     {
         public static DataQualityResult Assess(AirQualityData data)
         {
-            if (data == null) return new DataQualityResult { Score = 0, Status = "Invalid", Message = "No measurement available." };
-            int score = 100;
-            string issue = string.Empty;
-            Action<double,string> check = (v,n) => { if (double.IsNaN(v) || double.IsInfinity(v) || v < 0) { score -= 20; issue += n + " invalid; "; } };
-            check(data.PM25, "PM2.5"); check(data.PM10, "PM10"); check(data.CO2, "CO2"); check(data.NO2, "NO2");
-            if (data.Humidity > 100) { score -= 15; issue += "Humidity out of range; "; }
-            if (data.Temperature < -50 || data.Temperature > 70) { score -= 15; issue += "Temperature out of range; "; }
-            score = Math.Max(0, score);
-            return new DataQualityResult { Score = score, Status = score >= 95 ? "Excellent" : score >= 80 ? "Good" : score >= 60 ? "Degraded" : "Poor", Message = string.IsNullOrEmpty(issue) ? "Measurement passed basic quality checks." : issue.Trim() };
+            if (data == null)
+                return new DataQualityResult { Score = 0, Status = "Invalid", Message = "No measurement available." };
+
+            var available = new List<string>();
+            var issues = new List<string>();
+            Action<double, string, double> check = (value, name, max) =>
+            {
+                if (double.IsNaN(value) || double.IsInfinity(value)) return; // Not configured/not supplied is not a corrupt measurement.
+                available.Add(name);
+                if (value < 0 || (max > 0 && value > max)) issues.Add(name + " out of range");
+            };
+
+            check(data.PM25, "PM2.5", 1000);
+            check(data.PM10, "PM10", 2000);
+            check(data.CO2, "CO2", 10000);
+            check(data.NO2, "NO2", 5000);
+            check(data.Temperature, "Temperature", 70);
+            check(data.Humidity, "Humidity", 100);
+
+            if (available.Count == 0)
+                return new DataQualityResult { Score = 0, Status = "No Data", Message = "No analyzer measurement is currently available." };
+
+            int score = issues.Count == 0 ? 100 : Math.Max(0, 100 - issues.Count * 20);
+            string status = score >= 95 ? "Excellent" : score >= 80 ? "Good" : score >= 60 ? "Degraded" : "Poor";
+            string message = issues.Count == 0
+                ? available.Count + " live parameter(s) passed basic quality checks."
+                : string.Join("; ", issues) + ".";
+
+            return new DataQualityResult { Score = score, Status = status, Message = message };
         }
     }
 }

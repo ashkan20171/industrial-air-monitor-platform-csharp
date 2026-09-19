@@ -1,17 +1,17 @@
-C:\Users\ashkan2025\Desktop\New folder (8)\AshkanAQMS_src\bin\Debug\net48\AshkanAQMS.exe.config
-C:\Users\ashkan2025\Desktop\New folder (8)\AshkanAQMS_src\bin\Debug\net48\AshkanAQMS.exe
-C:\Users\ashkan2025\Desktop\New folder (8)\AshkanAQMS_src\bin\Debug\net48\AshkanAQMS.pdb
-C:\Users\ashkan2025\Desktop\New folder (8)\AshkanAQMS_src\bin\Debug\net48\System.Security.Cryptography.ProtectedData.dll
-C:\Users\ashkan2025\Desktop\New folder (8)\AshkanAQMS_src\obj\Debug\net48\AshkanAQMS.csproj.AssemblyReference.cache
-C:\Users\ashkan2025\Desktop\New folder (8)\AshkanAQMS_src\obj\Debug\net48\AshkanAQMS.MainDashboard.resources
-C:\Users\ashkan2025\Desktop\New folder (8)\AshkanAQMS_src\obj\Debug\net48\AshkanAQMS.csproj.GenerateResource.cache
-C:\Users\ashkan2025\Desktop\New folder (8)\AshkanAQMS_src\obj\Debug\net48\AshkanAQMS.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\ashkan2025\Desktop\New folder (8)\AshkanAQMS_src\obj\Debug\net48\AshkanAQMS.AssemblyInfoInputs.cache
-C:\Users\ashkan2025\Desktop\New folder (8)\AshkanAQMS_src\obj\Debug\net48\AshkanAQMS.AssemblyInfo.cs
-C:\Users\ashkan2025\Desktop\New folder (8)\AshkanAQMS_src\obj\Debug\net48\AshkanAQMS.csproj.CoreCompileInputs.cache
-C:\Users\ashkan2025\Desktop\New folder (8)\AshkanAQMS_src\obj\Debug\net48\AshkanAQMS.csproj.Up2Date
-C:\Users\ashkan2025\Desktop\New folder (8)\AshkanAQMS_src\obj\Debug\net48\AshkanAQMS.exe
-C:\Users\ashkan2025\Desktop\New folder (8)\AshkanAQMS_src\obj\Debug\net48\AshkanAQMS.pdb
+C:\Users\ashkan2025\Desktop\New folder (5)\obj\Debug\net48\AshkanAQMS.csproj.AssemblyReference.cache
+C:\Users\ashkan2025\Desktop\New folder (5)\obj\Debug\net48\AshkanAQMS.MainDashboard.resources
+C:\Users\ashkan2025\Desktop\New folder (5)\obj\Debug\net48\AshkanAQMS.csproj.GenerateResource.cache
+C:\Users\ashkan2025\Desktop\New folder (5)\obj\Debug\net48\AshkanAQMS.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ashkan2025\Desktop\New folder (5)\obj\Debug\net48\AshkanAQMS.AssemblyInfoInputs.cache
+C:\Users\ashkan2025\Desktop\New folder (5)\obj\Debug\net48\AshkanAQMS.AssemblyInfo.cs
+C:\Users\ashkan2025\Desktop\New folder (5)\obj\Debug\net48\AshkanAQMS.csproj.CoreCompileInputs.cache
+C:\Users\ashkan2025\Desktop\New folder (5)\bin\Debug\net48\AshkanAQMS.exe.config
+C:\Users\ashkan2025\Desktop\New folder (5)\bin\Debug\net48\AshkanAQMS.exe
+C:\Users\ashkan2025\Desktop\New folder (5)\bin\Debug\net48\AshkanAQMS.pdb
+C:\Users\ashkan2025\Desktop\New folder (5)\bin\Debug\net48\System.Security.Cryptography.ProtectedData.dll
+C:\Users\ashkan2025\Desktop\New folder (5)\obj\Debug\net48\AshkanAQMS.csproj.Up2Date
+C:\Users\ashkan2025\Desktop\New folder (5)\obj\Debug\net48\AshkanAQMS.exe
+C:\Users\ashkan2025\Desktop\New folder (5)\obj\Debug\net48\AshkanAQMS.pdb
 F:\project\C#\AshkanAQMS\bin\Debug\net48\AshkanAQMS.exe.config
 F:\project\C#\AshkanAQMS\bin\Debug\net48\AshkanAQMS.exe
 F:\project\C#\AshkanAQMS\bin\Debug\net48\AshkanAQMS.pdb

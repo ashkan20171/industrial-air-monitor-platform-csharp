@@ -38,3 +38,7 @@ See `docs/ARCHITECTURE.md` and `docs/FEATURES.md` for the engineering design and
 - System Diagnostics provides a quick deployment-readiness check and exportable diagnostic snapshot.
 - Analyzer configuration includes input validation for network and serial settings.
 - Existing WinForms forms remain part of the application and are being progressively upgraded rather than replaced.
+
+## Real Hardware Acquisition (v2.8.4)
+
+The application now uses a real-hardware acquisition pipeline by default. See `docs/REAL_HARDWARE_SETUP.md` for analyzer configuration, serial/TCP parsing, disable/enable behavior, and protocol-driver guidance.
