@@ -22,8 +22,12 @@ namespace AshkanAQMS.Services
     /// </summary>
     public sealed class AnalyzerAcquisitionService : IDisposable
     {
-        private readonly RealAnalyzerReader _reader = new RealAnalyzerReader();
+        private readonly AnalyzerDriverService _reader = new AnalyzerDriverService();
         private readonly AuditLogger _audit = new AuditLogger();
+        private readonly AnalyzerHealthRegistry _health = new AnalyzerHealthRegistry();
+        private readonly StorageService _storage = new StorageService();
+
+        public List<AnalyzerHealthSnapshot> GetHealthSnapshot() { return _health.GetSnapshot(); }
         private bool _disposed;
 
         public async Task<AcquisitionCycleResult> ReadCycleAsync(IEnumerable<AnalyzerConfig> analyzers, CancellationToken token)
@@ -36,6 +40,16 @@ namespace AshkanAQMS.Services
             foreach (var analyzer in active)
             {
                 token.ThrowIfCancellationRequested();
+                // Re-check persistent state immediately before every physical request. This prevents
+                // an analyzer disabled after the cycle snapshot from receiving a later poll command.
+                var live = (_storage.LoadAnalyzers() ?? new List<AnalyzerConfig>())
+                    .FirstOrDefault(x => x != null && string.Equals(x.Id, analyzer.Id, StringComparison.OrdinalIgnoreCase));
+                if (live == null || !live.Enabled)
+                {
+                    var disabled = new AnalyzerReading { AnalyzerId=analyzer.Id, AnalyzerName=analyzer.Name, GasType=analyzer.GasType, Timestamp=DateTime.Now, Value=double.NaN, Quality=AnalyzerReadingQuality.Disabled, Message="Analyzer was disabled before polling." };
+                    result.Readings.Add(disabled); _health.Record(disabled);
+                    continue;
+                }
                 AnalyzerReading reading;
                 try
                 {
@@ -57,6 +71,7 @@ namespace AshkanAQMS.Services
                 }
 
                 result.Readings.Add(reading);
+                _health.Record(reading);
                 if (reading.Quality != AnalyzerReadingQuality.Good)
                     _audit.Write("ANALYZER_COMMUNICATION", analyzer.Name + " | " + reading.Quality + " | " + reading.Message);
             }

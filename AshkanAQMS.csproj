@@ -9,8 +9,8 @@
     <LangVersion>latest</LangVersion>
     <Platforms>AnyCPU</Platforms>
     <ApplicationIcon />
-    <AssemblyVersion>2.8.4.0</AssemblyVersion>
-    <FileVersion>2.8.4.0</FileVersion>
+    <AssemblyVersion>9.0.0.0</AssemblyVersion>
+    <FileVersion>9.0.0.0</FileVersion>
     <Nullable>disable</Nullable>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
@@ -26,4 +26,11 @@
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Original SadraAQMS analyzer sources supplied by the user are intentionally retained
+         as engineering migration references. They depend on the legacy SadraAQMS runtime and
+         are excluded from compilation until adapted/tested against physical hardware. -->
+    <Compile Remove="LegacyAnalyzerSources\**\*.cs" />
+    <None Include="LegacyAnalyzerSources\**\*.cs" />
+  </ItemGroup>
 </Project>

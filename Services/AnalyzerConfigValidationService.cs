@@ -78,6 +78,7 @@ namespace AshkanAQMS.Services
                         result.Warnings.Add("Another analyzer uses the same IP endpoint.");
                 }
             }
+            if (config.EnableEngineeringRangeCheck && config.EngineeringMax <= config.EngineeringMin) result.Errors.Add("Engineering max must be greater than engineering min.");
             return result;
         }
     }

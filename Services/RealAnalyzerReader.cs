@@ -106,7 +106,7 @@ namespace AshkanAQMS.Services
 
                 if (!string.IsNullOrWhiteSpace(config.RequestCommand))
                 {
-                    port.Write(Unescape(config.RequestCommand));
+                    port.Write(ExpandCommand(config, Unescape(config.RequestCommand)));
                     if (config.ReadAfterWriteDelayMs > 0)
                         Thread.Sleep(Math.Min(config.ReadAfterWriteDelayMs, config.TimeoutMs));
                 }
@@ -132,7 +132,7 @@ namespace AshkanAQMS.Services
 
                     if (!string.IsNullOrWhiteSpace(config.RequestCommand))
                     {
-                        byte[] command = Encoding.GetEncoding(config.EncodingName ?? "ASCII").GetBytes(Unescape(config.RequestCommand));
+                        byte[] command = GetEncoding(config.EncodingName).GetBytes(ExpandCommand(config, Unescape(config.RequestCommand)));
                         stream.Write(command, 0, command.Length);
                         stream.Flush();
                         if (config.ReadAfterWriteDelayMs > 0)
@@ -177,7 +177,7 @@ namespace AshkanAQMS.Services
                 if (stream.DataAvailable)
                 {
                     int count = stream.Read(buffer, 0, buffer.Length);
-                    if (count > 0) builder.Append(Encoding.GetEncoding(config.EncodingName ?? "ASCII").GetString(buffer, 0, count));
+                    if (count > 0) builder.Append(GetEncoding(config.EncodingName).GetString(buffer, 0, count));
                 }
                 string current = builder.ToString();
                 if (!string.IsNullOrEmpty(delimiter) && current.IndexOf(delimiter, StringComparison.Ordinal) >= 0)
@@ -206,6 +206,11 @@ namespace AshkanAQMS.Services
             }
 
             value = value * config.Gain + config.Offset;
+            if (config.EnableEngineeringRangeCheck && (value < config.EngineeringMin || value > config.EngineeringMax))
+            {
+                return Failure(config, AnalyzerReadingQuality.InvalidData,
+                    string.Format(CultureInfo.InvariantCulture, "Value {0} is outside configured engineering range [{1}, {2}].", value, config.EngineeringMin, config.EngineeringMax));
+            }
             return new AnalyzerReading
             {
                 AnalyzerId = config.Id,
@@ -267,6 +272,12 @@ namespace AshkanAQMS.Services
             return double.TryParse(value, NumberStyles.Float | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out result);
         }
 
+        private static Encoding GetEncoding(string name)
+        {
+            try { return Encoding.GetEncoding(string.IsNullOrWhiteSpace(name) ? "ASCII" : name); }
+            catch { return Encoding.ASCII; }
+        }
+
         private static string Unescape(string value)
         {
             if (value == null) return string.Empty;
@@ -288,5 +299,15 @@ namespace AshkanAQMS.Services
                 ResponseTimeMs = responseTimeMs
             };
         }
+        private static string ExpandCommand(AnalyzerConfig config, string command)
+        {
+            command = command ?? string.Empty;
+            int id; int.TryParse(config.DeviceId, out id);
+            return command.Replace("{DEVICE_ID}", config.DeviceId ?? string.Empty)
+                          .Replace("{DEVICE_ID_3}", id.ToString("000", CultureInfo.InvariantCulture))
+                          .Replace("{CHANNEL}", config.Channel.ToString(CultureInfo.InvariantCulture))
+                          .Replace("{MAPPER_ID}", config.MapperId.ToString(CultureInfo.InvariantCulture));
+        }
+
     }
 }

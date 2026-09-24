@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "F:\\project\\C#\\AshkanAQMS\\AshkanAQMS.csproj": {}
+    "C:\\Users\\ashkan2025\\Desktop\\New folder (7)\\AshkanAQMS.csproj": {}
   },
   "projects": {
-    "F:\\project\\C#\\AshkanAQMS\\AshkanAQMS.csproj": {
+    "C:\\Users\\ashkan2025\\Desktop\\New folder (7)\\AshkanAQMS.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\project\\C#\\AshkanAQMS\\AshkanAQMS.csproj",
+        "projectUniqueName": "C:\\Users\\ashkan2025\\Desktop\\New folder (7)\\AshkanAQMS.csproj",
         "projectName": "AshkanAQMS",
-        "projectPath": "F:\\project\\C#\\AshkanAQMS\\AshkanAQMS.csproj",
+        "projectPath": "C:\\Users\\ashkan2025\\Desktop\\New folder (7)\\AshkanAQMS.csproj",
         "packagesPath": "C:\\Users\\ashkan2025\\.nuget\\packages\\",
-        "outputPath": "F:\\project\\C#\\AshkanAQMS\\obj\\",
+        "outputPath": "C:\\Users\\ashkan2025\\Desktop\\New folder (7)\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "E:\\86\\Microsoft Visual Studio\\Shared\\NuGetPackages"

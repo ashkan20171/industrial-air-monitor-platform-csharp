@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "sIdPdusmZoQ=",
+  "dgSpecHash": "gRrvNUKKXFs=",
   "success": true,
-  "projectFilePath": "F:\\project\\C#\\AshkanAQMS\\AshkanAQMS.csproj",
+  "projectFilePath": "C:\\Users\\ashkan2025\\Desktop\\New folder (7)\\AshkanAQMS.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\ashkan2025\\.nuget\\packages\\system.security.cryptography.protecteddata\\8.0.0\\system.security.cryptography.protecteddata.8.0.0.nupkg.sha512"
   ],

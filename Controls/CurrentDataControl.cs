@@ -196,7 +196,7 @@ namespace AshkanAQMS.Controls
                     data = BuildAirQualityData(acceptedReadings);
                     analyzerSummary = acceptedReadings.Count + "/" + currentEnabledIds.Count + " enabled analyzer reading(s) accepted.";
 
-                    if (cycle.SuccessfulReadingCount == 0)
+                    if (!acceptedReadings.Any(x => x.IsUsable))
                     {
                         ShowNoLiveData(analyzerSummary);
                         return;
