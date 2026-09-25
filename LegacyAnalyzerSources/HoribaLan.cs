@@ -76,7 +76,7 @@ namespace SadraAQMS.Analyzers
                 //}
                 //DatabaseHandler.ds.Tables["analyzer_parameters"].WriteXml("AnalyzerParameters.xml", XmlWriteMode.WriteSchema);
                 String username = "horiba";
-                String password = "password";
+                String password = "<LEGACY_CREDENTIAL_REMOVED>";
                 //"aG9yaWJhOnBhc3N3b3Jk"
                 String encoded = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
                 // http://192.168.0.183/cgi-bin/cgi-iox/data.xml?proc=801&DateSep=%2F&DecimalSep=.&DateFormat=ymd&FieldSep=%3CTab%3E&Resolution=low&Unit=1&_=1686568013456
@@ -103,7 +103,7 @@ namespace SadraAQMS.Analyzers
             statusLog(string.Format("SendReadCommand_RecoveryData:{0} -- {1}  ", strDate.ToString(), endDate.ToString()));
 
             String username = "horiba";
-            String password = "password";
+            String password = "<LEGACY_CREDENTIAL_REMOVED>";
             //String encoded = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
             //WebRequest request;
 

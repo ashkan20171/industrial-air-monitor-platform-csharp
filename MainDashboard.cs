@@ -8,11 +8,11 @@ namespace AshkanAQMS
 {
     public partial class MainDashboard : Form
     {
-        private readonly StorageService _storageService=new StorageService(); private AppSettings _currentSettings; private CurrentDataControl _currentDataControl; private FeatureCenterControl _featureCenter; private readonly Timer _clock=new Timer();
-        public MainDashboard(){InitializeComponent();_currentSettings=_storageService.LoadSettings()??new AppSettings();_clock.Interval=1000;_clock.Tick+=(s,e)=>lblClock.Text=DateTime.Now.ToString("yyyy-MM-dd  HH:mm:ss");_clock.Start();}
+        private readonly StorageService _storageService=new StorageService(); private AppSettings _currentSettings; private CurrentDataControl _currentDataControl; private FeatureCenterControl _featureCenter; private readonly Timer _clock=new Timer(); private bool _showcaseMode;
+        public MainDashboard(){InitializeComponent();_currentSettings=_storageService.LoadSettings()??new AppSettings();_clock.Interval=1000;_clock.Tick+=(s,e)=>lblClock.Text=DateTime.Now.ToString("yyyy-MM-dd  HH:mm:ss");_clock.Start();KeyPreview=true;KeyDown+=MainDashboard_KeyDown;}
         private void MainDashboard_Load(object sender,EventArgs e){ApplyPresentationMode();lblStation.Text=(_currentSettings.StationName??"AQMS Station")+"  •  "+_currentSettings.DataSourceMode;btnOverview_Click(sender,e);}
-        private void Show(Control c,string title,string subtitle){if(_currentDataControl!=null&&c!=_currentDataControl){_currentDataControl.StopMonitoring();_currentDataControl=null;}pnlContent.Controls.Clear();c.Dock=DockStyle.Fill;pnlContent.Controls.Add(c);lblTitle.Text=title;lblSubtitle.Text=subtitle;}
-        private void btnOverview_Click(object s,EventArgs e){Show(new OperationsOverviewControl(),"Dashboard","Station overview, analyzer status and operational summary");}
+        private void Show(Control c,string title,string subtitle){pnlSubHeader.Visible=true;if(_currentDataControl!=null&&c!=_currentDataControl){_currentDataControl.StopMonitoring();_currentDataControl=null;}pnlContent.Controls.Clear();c.Dock=DockStyle.Fill;pnlContent.Controls.Add(c);lblTitle.Text=title;lblSubtitle.Text=subtitle;}
+        private void btnOverview_Click(object s,EventArgs e){Show(new OperationsOverviewControl(_showcaseMode),"Dashboard",_showcaseMode ? "Portfolio showcase • clearly labeled demonstration telemetry" : "Station overview, analyzer status and operational summary");pnlSubHeader.Visible=false;}
         private void btnFleet_Click(object s,EventArgs e){Show(new FleetHealthControl(),"Fleet Health","Analyzer readiness, transport, endpoint and acquisition state");}
         private void btnMaintenance_Click(object s,EventArgs e){Show(new MaintenanceCenterControl(),"Maintenance & Reliability","Preventive maintenance, calibration readiness and engineering governance");}
         private void btnCurrentData_Click(object s,EventArgs e){_currentDataControl=new CurrentDataControl();Show(_currentDataControl,"Live Air Quality","Real hardware acquisition, AQI, data quality and alarms");}
@@ -35,7 +35,19 @@ namespace AshkanAQMS
         private void btnQuality_Click(object s,EventArgs e){Show(new QualityAssuranceControl(),"Data Quality & QA","Configuration quality, measurement mapping and engineering-range governance");}
         private void btnCommissioning_Click(object s,EventArgs e){Show(new CommissioningControl(),"Commissioning & Readiness","Pre-deployment checklist and operator readiness workflow");}
         private void btnGovernance_Click(object s,EventArgs e){Show(new ConfigurationGovernanceControl(),"Configuration Governance","Backup inventory, recovery points and controlled configuration changes");}
+        private void btnLogbook_Click(object s,EventArgs e){Show(new OperationsLogbookControl(),"Operations Logbook","Shift notes, incidents, acknowledgements and operator context");}
+        private void btnCompliance_Click(object s,EventArgs e){Show(new ComplianceCenterControl(),"Compliance & Data Governance","Configuration evidence, traceability and engineering governance");}
+        private void btnAlarmConsole_Click(object s,EventArgs e){Show(new AlarmConsoleControl(),"Alarm Command Console","Acknowledge, shelve and close operational alarms");}
+        private void btnDriverBench_Click(object s,EventArgs e){Show(new DriverTestBenchControl(),"Driver Test Bench","Offline protocol packet inspection and driver engineering workspace");}
+        private void btnAccess_Click(object s,EventArgs e){Show(new AccessGovernanceControl(),"Access Governance","Role-based access blueprint and least-privilege matrix");}
+        private void btnBackup_Click(object s,EventArgs e){Show(new BackupRecoveryControl(),"Backup & Recovery","Station snapshots and disaster-readiness workflow");}
+        private void btnMultiStation_Click(object s,EventArgs e){Show(new MultiStationCommandCenterControl(),"Multi-Station Command Center","Distributed station fleet supervision and operational readiness");}
+        private void btnNotifications_Click(object s,EventArgs e){Show(new NotificationCenterControl(),"Notification & Escalation Center","Alarm routing, escalation and delivery-channel governance");}
+        private void btnConfigVersions_Click(object s,EventArgs e){Show(new ConfigurationVersioningControl(),"Configuration Versioning","Change control, diff preview, approvals and rollback governance");}
+        private void btnCalibrationEvidence_Click(object s,EventArgs e){Show(new CalibrationEvidenceControl(),"Calibration Evidence","Reference standards, sign-off and certificate evidence workflow");}
         private void btnAbout_Click(object s,EventArgs e){Show(new AboutControl(),"About Ashkan AQMS","Industrial WinForms monitoring platform");}
+        private void btnShowcase_Click(object s,EventArgs e){_showcaseMode=!_showcaseMode;lblSystem.Text=_showcaseMode?"◆ SHOWCASE MODE":"● SYSTEM ONLINE";lblSystem.ForeColor=_showcaseMode?IndustrialTheme.Purple:IndustrialTheme.Green;btnOverview_Click(s,e);}
+        private void MainDashboard_KeyDown(object sender,KeyEventArgs e){if(e.KeyCode==Keys.F11){if(FormBorderStyle==FormBorderStyle.None){FormBorderStyle=FormBorderStyle.Sizable;WindowState=FormWindowState.Normal;}else{FormBorderStyle=FormBorderStyle.None;WindowState=FormWindowState.Maximized;}e.Handled=true;}else if(e.Control&&e.KeyCode==Keys.D1){btnOverview_Click(sender,e);e.Handled=true;}else if(e.Control&&e.KeyCode==Keys.L){btnCurrentData_Click(sender,e);e.Handled=true;}}
         private void ApplyPresentationMode(){if(_currentSettings.PresentationMode){FormBorderStyle=FormBorderStyle.None;WindowState=FormWindowState.Maximized;}else{FormBorderStyle=FormBorderStyle.Sizable;if(WindowState==FormWindowState.Maximized)WindowState=FormWindowState.Normal;}}
         protected override void OnFormClosing(FormClosingEventArgs e){if(_currentDataControl!=null)_currentDataControl.StopMonitoring();_clock.Dispose();base.OnFormClosing(e);}
     }

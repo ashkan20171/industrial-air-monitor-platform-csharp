@@ -1,0 +1,15 @@
+using System;
+using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
+using AshkanAQMS.Services;
+namespace AshkanAQMS.Controls
+{
+ public sealed class ComplianceCenterControl:UserControl
+ {
+  public ComplianceCenterControl(){Dock=DockStyle.Fill;BackColor=IndustrialTheme.Canvas;Padding=new Padding(24);var storage=new StorageService();var a=storage.LoadAnalyzers();var root=new TableLayoutPanel{Dock=DockStyle.Top,AutoSize=true,ColumnCount=1};root.Controls.Add(Hero());var cards=new FlowLayoutPanel{Dock=DockStyle.Top,AutoSize=true,WrapContents=true,Padding=new Padding(0,14,0,14)};cards.Controls.Add(Card("CONFIGURATION COMPLETENESS",a.Count==0?"--":((int)(100.0*a.Count(x=>!string.IsNullOrWhiteSpace(x.DriverId)&&!string.IsNullOrWhiteSpace(x.Name))/a.Count))+"%","Analyzer identity and driver mapping"));cards.Controls.Add(Card("RANGE GOVERNANCE",a.Count(x=>x.EnableEngineeringRangeCheck).ToString(),"Analyzers with engineering limits"));cards.Controls.Add(Card("SECURE CREDENTIALS",a.Count(x=>!string.IsNullOrWhiteSpace(x.ProtectedPassword)).ToString(),"Protected analyzer credential records"));cards.Controls.Add(Card("ACTIVE CHANNELS",a.Sum(x=>x.Measurements==null?0:x.Measurements.Count(m=>m.Enabled)).ToString(),"Enabled mapped measurements"));root.Controls.Add(cards);root.Controls.Add(Matrix(a));Controls.Add(root);}
+  Control Hero(){var p=new Panel{Height=110,Dock=DockStyle.Top,BackColor=IndustrialTheme.Navy800,Padding=new Padding(22)};p.Controls.Add(new Label{Text="COMPLIANCE & DATA GOVERNANCE",Dock=DockStyle.Top,Height=34,ForeColor=Color.White,Font=new Font("Segoe UI Semibold",18,FontStyle.Bold)});p.Controls.Add(new Label{Text="Configuration evidence • measurement traceability • engineering limits • credential posture",Dock=DockStyle.Bottom,Height=28,ForeColor=Color.FromArgb(170,205,220),Font=new Font("Segoe UI",9.5f)});return p;}
+  Control Card(string h,string v,string s){var p=new Panel{Width=285,Height=105,BackColor=Color.White,Margin=new Padding(0,0,12,0),Padding=new Padding(16)};p.Controls.Add(new Label{Text=s,Dock=DockStyle.Bottom,Height=22,ForeColor=IndustrialTheme.Muted});p.Controls.Add(new Label{Text=v,Dock=DockStyle.Fill,ForeColor=IndustrialTheme.Blue,Font=new Font("Segoe UI Semibold",22,FontStyle.Bold)});p.Controls.Add(new Label{Text=h,Dock=DockStyle.Top,Height=22,ForeColor=IndustrialTheme.Ink,Font=new Font("Segoe UI Semibold",8.5f,FontStyle.Bold)});return p;}
+  Control Matrix(System.Collections.Generic.List<AshkanAQMS.Models.AnalyzerConfig> a){var p=new Panel{Dock=DockStyle.Top,Height=380,BackColor=Color.White,Padding=new Padding(16)};var g=new DataGridView{Dock=DockStyle.Fill,ReadOnly=true,AllowUserToAddRows=false,AutoSizeColumnsMode=DataGridViewAutoSizeColumnsMode.Fill};IndustrialTheme.PolishGrid(g);g.DataSource=a.Select(x=>new{x.Name,x.Manufacturer,x.Model,Driver=x.DriverId,Enabled=x.Enabled,Measurements=x.Measurements==null?0:x.Measurements.Count(m=>m.Enabled),RangeCheck=x.EnableEngineeringRangeCheck,Credentials=string.IsNullOrWhiteSpace(x.ProtectedPassword)?"NONE":"PROTECTED"}).ToList();p.Controls.Add(g);return p;}
+ }
+}

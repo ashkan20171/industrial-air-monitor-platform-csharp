@@ -1,8 +1,50 @@
+# Visual Studio / build output
 .vs/
-bin/
-obj/
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+artifacts/
+TestResults/
+
+# User-specific files
 *.user
 *.suo
 *.userprefs
+*.rsuser
+*.sln.docstates
+
+# NuGet / generated
+packages/
+*.nupkg
+*.snupkg
+
+# Logs / runtime data / exports
+*.log
+logs/
+Logs/
+exports/
+Exports/
+backups/
+Backups/
+*.csv
+*.xlsx
+
+# Local configuration / secrets
+.env
+.env.*
+*.secrets.json
+appsettings.*.local.json
+*.pfx
+*.p12
+*.key
+
+# Temporary files
 *.tmp
 *.bak
+*.cache
+~$*
+.DS_Store
+Thumbs.db

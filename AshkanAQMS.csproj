@@ -9,8 +9,8 @@
     <LangVersion>latest</LangVersion>
     <Platforms>AnyCPU</Platforms>
     <ApplicationIcon />
-    <AssemblyVersion>9.0.0.0</AssemblyVersion>
-    <FileVersion>9.0.0.0</FileVersion>
+    <AssemblyVersion>17.0.0.0</AssemblyVersion>
+    <FileVersion>17.0.0.0</FileVersion>
     <Nullable>disable</Nullable>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
@@ -18,6 +18,8 @@
 
   <ItemGroup>
     <Reference Include="System.Configuration" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Windows.Forms.DataVisualization" />
   </ItemGroup>
 
