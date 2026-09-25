@@ -1,164 +1,155 @@
-# AshkanAQMS Enterprise v10.4 — Dashboard Visual Polish
+# AshkanAQMS
 
-This revision focuses on the station dashboard shown at startup.
+**Industrial Air Quality Monitoring & Analyzer Operations Platform — C# / .NET Framework / Windows Forms**
 
-- Menu-only navigation: no duplicate dashboard navigation buttons or toolbar.
-- KPI cards use a stable three-row layout so long values such as `RealHardware` are not clipped.
-- Dashboard status text now correctly refers only to the permanent menu.
-- Larger operational panels for AQI, trend and summary.
-- Analyzer fleet state is visually emphasized while preserving the existing industrial layout.
-- Existing analyzer studio, acquisition, calibration, alarms, reports, diagnostics and legacy analyzer source references are preserved.
+AshkanAQMS is a portfolio-scale industrial air-quality monitoring system designed around the workflows of environmental monitoring stations. It combines real-time analyzer acquisition, AQI and pollutant telemetry, analyzer fleet health, alarm operations, calibration evidence, data-quality workflows, diagnostics, reporting, configuration governance, and distributed-station operations in a Windows desktop application.
 
-Real analyzer protocols still require validation against the actual analyzer model/firmware before production deployment.
+> **Engineering status:** the application defaults to **RealHardware** mode and does not fabricate measurements when a configured instrument is unavailable. Vendor-specific sources under `LegacyAnalyzerSources/` are retained as migration references and are excluded from compilation until adapted and validated against the corresponding physical hardware and protocol documentation.
 
-# AshkanAQMS Enterprise v10.3.1 — Menu-Only Navigation
+## Why this project exists
 
-## Dashboard navigation correction
-- Removed the entire quick-action ToolStrip from the main shell.
-- Current Data, Historical, Export/Trends, Analyzer Parameters, Calibration, Remote, DAQ/Weather, Alarms, Diagnostics, Readiness and Dashboard are no longer repeated as toolbar buttons.
-- Navigation remains available from the permanent top MenuStrip.
-- The Dashboard is reserved for operational KPIs, AQI, 24-hour trend, alarm/weather/station summary and analyzer fleet status.
-
-# AshkanAQMS Enterprise v10.2 — Dashboard Navigation Edition
-
-This edition starts on a dedicated station Dashboard, inspired by the workflow of the legacy SadraAQMS application while retaining the modern enterprise UI. Every top-menu item, toolbar command and dashboard quick action opens its related detailed workspace inside the main application content area.
-
-## v10 navigation changes
-- Dashboard is the default startup workspace.
-- Dashboard shows configured/enabled/disabled analyzers and acquisition mode.
-- Quick actions open Live Data, Analyzer Parameters, Alarms and Historical/Reports.
-- Top menus and the large legacy-inspired toolbar remain available at all times.
-- Detailed workspaces replace the central content area without opening a confusing collection of unrelated main windows.
-- Existing Analyzer Studio, driver catalog, calibration, fleet health, maintenance, DAQ/weather/UPS, remote operations, diagnostics, QA, commissioning, governance, digital twin, incidents, planner, integrations and analytics remain available.
-
-# Ashkan AQMS Enterprise v8.0 — Legacy-Inspired Modern Operations UI
-
-## v8 visual direction
-The main shell deliberately preserves the proven SadraAQMS operator workflow — **File / Analyzers / View / Tools / Operations / Help**, a large quick-access toolbar, persistent station identity, and a bottom equipment-status strip — while modernizing typography, spacing, colors, hierarchy, responsive docking and enterprise navigation. The goal is familiarity for AQMS operators without carrying forward the dated fixed-size UI.
-
-### Quick-access workflow
-Current Data, Historical/Reports, Export/Trends, Analyzer Parameters, Calibration, Remote, DAQ/Weather, Alarms, Diagnostics and Command Center are one click away from the top toolbar. The richer v7 Analyzer Studio remains available under **Analyzers → Analyzer Parameters**, including driver-family and measurement/gas selection.
-
-# Ashkan AQMS Enterprise v7.0
-
-Version 6 expands the portfolio/enterprise surface beyond the supplied legacy system while retaining all 35 supplied analyzer/reference files under `LegacyAnalyzerSources/`.
-
-## v6 additions
-- Station Digital Twin with synchronized analyzer/edge/storage/alarm topology.
-- Operations Planner & Work Orders with generated preventive-maintenance and calibration-readiness queues.
-- Incident & Shift Handover Center with ownership, acknowledgement and resolution workflow.
-- Data Explorer & Analytics Workbench for quality-aware investigation and cross-pollutant analysis design.
-- Integration Hub covering OPC UA, MQTT, REST, SQL Historian, SignalR, Modbus, Serial, TCP/UDP, HTTP/CGI and DAQ integration boundaries.
-- Expanded Command Center capability cards and navigation.
-- Existing Fleet Health, Maintenance, Calibration, Remote Operations, Communication Lab, Reports, Alarm/Audit, DAQ/Weather/UPS, Diagnostics and Analyzer Management retained.
-
-> Engineering note: screens that describe an adapter as architecture-ready are integration surfaces, not claims that a production OPC UA/MQTT/REST server is already field-certified. Legacy vendor protocols remain migration references until adapted and hardware-validated.
-
-
-A portfolio-grade industrial air-quality operations platform for WinForms / .NET Framework 4.8. v5 focuses on a premium command-center experience, a broader operational surface, and an auditable migration path for the real analyzer protocols supplied from SadraAQMS.
-
-## v5 highlights
-- Redesigned enterprise command-center shell and visual system.
-- New Fleet Health and Maintenance & Reliability surfaces.
-- Expanded driver catalog and transport coverage.
-- Original supplied analyzer source files retained under `LegacyAnalyzerSources/` (excluded from compilation until adapted and hardware-tested).
-- RealHardware remains the safe default; simulation requires explicit opt-in.
-- Analyzer disable safety is enforced before polling and before accepting in-flight readings.
-- Portfolio showcase documentation under `docs/PORTFOLIO_SHOWCASE.md`.
-
-
-A portfolio-grade industrial Air Quality Monitoring System designed to remain compatible with Windows desktop/industrial environments while providing a modern operator experience.
+Environmental monitoring software is more than a chart of sensor values. A station operator needs to understand whether an instrument is online, whether a sample is trustworthy, what changed in configuration, whether calibration evidence exists, which alarms need action, and whether data can be traced from field device to historian. AshkanAQMS explores those concerns as one cohesive industrial operations product.
 
 ## Highlights
-- Modern dark industrial WinForms dashboard
-- Real-time monitoring simulator
-- AQI and dominant pollutant calculation
-- PM2.5 trend visualization
-- Local-first AI analytics: EMA, linear forecast, anomaly detection and confidence
-- Measurement Data Quality Score
-- Latched Warning/Critical alarm engine with clear events
-- Optional AI anomaly alarms
-- Operator sound alerts
-- CSV historical archive and reporting
-- Analyzer configuration
-- Application audit log
-- Basic CPU/RAM health telemetry
-- DPI-aware foundation and defensive exception handling
+
+- Real-hardware-first analyzer acquisition with explicit simulation opt-in
+- Immediate polling exclusion for disabled analyzers, including post-request acceptance checks
+- Multi-analyzer configuration and per-analyzer health/latency tracking
+- AQI, pollutant telemetry, trend visualization and deterministic local analytics
+- Analyzer Fleet Intelligence and Station Digital Twin views
+- Alarm history plus acknowledge/shelve/close operations console
+- Zero/Span calibration workflow and calibration evidence center
+- Data Quality / QA, commissioning, maintenance and operations planning workspaces
+- Driver Catalog, Communication Lab, Driver Test Bench and packet inspection tooling
+- Serial, TCP/IP and configurable ASCII acquisition paths
+- Legacy protocol migration references for multiple environmental-instrument families
+- Historical exploration, reporting and executive snapshots
+- Configuration backup, recovery, versioning and change-control workflows
+- Operations Logbook, incident/shift handover and compliance/governance views
+- Multi-Station Command Center and notification/escalation design surfaces
+- RBAC / least-privilege governance blueprint
+- SCADA/NOC-inspired Obsidian operations dashboard
+
+## System architecture
+
+```text
+┌──────────────────────────────── Field / Station Layer ────────────────────────────────┐
+│ Gas analyzers │ PM analyzers │ Weather │ DAQ / Analog │ Serial │ TCP/IP │ HTTP/CGI │
+└───────────────────────────────────────┬───────────────────────────────────────────────┘
+                                        │
+                         Acquisition + Driver Boundary
+                                        │
+                 ┌──────────────────────┴──────────────────────┐
+                 │ RealAnalyzerReader / AnalyzerAcquisition     │
+                 │ Driver Catalog / Health Registry / Validation│
+                 └──────────────────────┬──────────────────────┘
+                                        │
+                  Quality / Operations / Intelligence Services
+                                        │
+       ┌──────────────┬──────────────┬───┴────────┬──────────────┬───────────────┐
+       │ AQI / Trends │ Alarm Engine │ Data QA    │ Calibration  │ Audit/Reports │
+       └──────────────┴──────────────┴────┬───────┴──────────────┴───────────────┘
+                                         │
+                            Storage / Historian Boundary
+                                         │
+                  ┌──────────────────────┴──────────────────────┐
+                  │ WinForms Operations / Engineering Workspaces│
+                  │ Dashboard • Fleet • Digital Twin • Evidence │
+                  └─────────────────────────────────────────────┘
+```
+
+More detail: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+
+## Technology stack
+
+| Area | Technology / approach |
+|---|---|
+| Desktop | C#, Windows Forms, .NET Framework 4.8 |
+| UI | Custom industrial controls, WinForms charting, SCADA/NOC-inspired dashboard |
+| Acquisition | Serial and TCP/IP request/response; configurable text parsing |
+| Security | Windows DPAPI support for protected analyzer credentials |
+| Analytics | AQI, data-quality scoring, deterministic trend/anomaly services |
+| Persistence | Local storage/archive with database service extension boundary |
+| Engineering | Driver catalog, diagnostics, packet test bench, configuration validation |
+
+## Analyzer / protocol engineering
+
+The catalog models instrument families found in the supplied legacy AQMS source, including HORIBA, Ecotech/Serinus, Thermo Scientific, Teledyne, ESA, Met One BAM/E-BAM, GRIMM, Palas, FAI SWAM, Unitec, Vaisala, Davis, Delta OHM, Aeroqual, Synspec and other integration families.
+
+| Status | Meaning |
+|---|---|
+| **Production** | Implemented by the current application path; still requires deployment-specific commissioning |
+| **Migration reference** | Legacy source/catalog mapping retained for engineering migration; **not claimed as hardware-validated** |
+| **Hardware validation required** | Physical-device/protocol verification is required before production deployment |
+
+See [`docs/DRIVER_SUPPORT_MATRIX.md`](docs/DRIVER_SUPPORT_MATRIX.md) and [`docs/REAL_HARDWARE_SETUP.md`](docs/REAL_HARDWARE_SETUP.md).
+
+## Major workspaces
+
+The application includes Operations Dashboard, Live Data, Analyzer Fleet, Station Digital Twin, Analyzer Configuration, Driver Catalog, Calibration Center, Calibration Evidence, Maintenance, Quality Assurance, Commissioning, Alarm Console, Historical/Data Explorer, Reports, Remote Operations, Industrial I/O, Communication Lab, Driver Test Bench, Diagnostics, Configuration Governance, Configuration Versioning, Backup & Recovery, Operations Logbook, Incident Center, Operations Planner, Compliance Center, Access Governance, Multi-Station Command Center, Notification/Escalation Center and Integration Hub.
+
+## Safety and data-integrity behavior
+
+AshkanAQMS intentionally separates demonstration UX from real telemetry. `RealHardware` is the default acquisition mode. If no enabled analyzer returns a usable sample, the UI reports no live data rather than substituting a simulated value. Disabling an analyzer prevents new polling and the acquisition pipeline re-checks its enabled state before accepting an in-flight result.
+
+This repository is an engineering/portfolio project. It does **not** claim regulatory certification, metrological certification, cybersecurity certification, or validation for every retained vendor protocol. Deployment requires verification against the actual instruments, applicable environmental standards, site procedures and infrastructure.
 
 ## Build
-Open `AshkanAQMS.sln` in Visual Studio on Windows with .NET Framework 4.8 developer/targeting tools installed.
 
-## Important
-The bundled simulator and local analytics are demonstration/engineering features. They are not a regulatory certification. For production AQMS use, validate sensors, calibration, averaging periods, AQI methodology, traceability and applicable local/EU requirements.
+Requirements:
 
-See `docs/ARCHITECTURE.md` and `docs/FEATURES.md` for the engineering design and extension points.
+- Windows 10/11
+- Visual Studio 2022 with **.NET desktop development** workload
+- .NET Framework 4.8 Developer Pack
 
+```text
+1. Clone the repository.
+2. Open AshkanAQMS.sln in Visual Studio.
+3. Restore NuGet packages.
+4. Build the solution (Debug or Release).
+5. Configure analyzers before enabling real acquisition.
+```
 
-### v2.3 highlights
-- Dashboard Feature Center for live capability toggles
-- Enable All / Safe Demo Mode / Reset Defaults
-- Presentation Mode for portfolio demonstrations
-- Feature flags persisted through the existing settings store
+For hardware setup and parsing options, read [`docs/REAL_HARDWARE_SETUP.md`](docs/REAL_HARDWARE_SETUP.md).
 
-### v2.5 — Operations & Technical Review
-- Alarm & Audit History is now a first-class dashboard view.
-- System Diagnostics provides a quick deployment-readiness check and exportable diagnostic snapshot.
-- Analyzer configuration includes input validation for network and serial settings.
-- Existing WinForms forms remain part of the application and are being progressively upgraded rather than replaced.
+## Repository map
 
-## Real Hardware Acquisition (v2.8.4)
+```text
+Controls/               WinForms operational and engineering workspaces
+Drivers/                Current analyzer-driver catalog
+Interfaces/             Infrastructure abstractions
+Models/                 Domain/configuration models
+Services/               Acquisition, AQI, QA, alarms, storage and reporting
+LegacyAnalyzerSources/  Supplied legacy protocol sources; excluded from compilation
+docs/                   Architecture, hardware setup and engineering documentation
+```
 
-The application now uses a real-hardware acquisition pipeline by default. See `docs/REAL_HARDWARE_SETUP.md` for analyzer configuration, serial/TCP parsing, disable/enable behavior, and protocol-driver guidance.
+## Portfolio / showcase mode
 
+The application contains an explicitly labelled showcase path for UI demonstrations. Showcase values must not be interpreted as station measurements and are not a substitute for real-hardware validation.
 
-### v3.0 — Industrial hardening
-- Fixed duplicate TCP receive-buffer processing.
-- Added engineering-range rejection before AQI/alarm/archive processing.
-- Added per-analyzer communication health registry.
-- Hardened disable-during-read behavior so late samples are discarded.
-- Added safe encoding fallback and technical hardening review.
+## Roadmap
 
-See `docs/REVIEW_AND_HARDENING.md`.
+The strongest future engineering steps are protocol-by-protocol hardware validation, production authentication/authorization enforcement, a durable SQL historian, automated test coverage, resource-based localization, signed deployment packages, and validated OPC UA/MQTT adapters.
 
-## Ashkan AQMS Industrial 4.0
+## Documentation
 
-Version 4.0 introduces a top-navigation NOC/SCADA-inspired shell, station operations overview, analyzer driver catalog, calibration center, industrial I/O/weather/UPS workspace and communication diagnostics workspace.
+- [`Architecture`](docs/ARCHITECTURE.md)
+- [`Feature Matrix`](docs/FEATURES.md)
+- [`Driver Support Matrix`](docs/DRIVER_SUPPORT_MATRIX.md)
+- [`Real Hardware Setup`](docs/REAL_HARDWARE_SETUP.md)
+- [`Portfolio Showcase`](docs/PORTFOLIO_SHOWCASE.md)
+- [`Legacy Driver Migration`](docs/LEGACY_DRIVER_MIGRATION.md)
+- [`Security Policy`](SECURITY.md)
+- [`Contributing`](CONTRIBUTING.md)
+- [`Changelog`](CHANGELOG.md)
 
-### Acquisition safety boundary
+## Author
 
-* Analyzer enabled state is checked when a cycle is created **and again immediately before each physical request**.
-* The live enabled set is re-read after acquisition; a response from an analyzer disabled while a request was in flight is discarded before dashboard, AQI, alarms or archive processing.
-* Simulation is never used as an implicit fallback for failed hardware. It only runs when `DataSourceMode=Simulation` and simulation is explicitly allowed.
-* Vendor entries marked **Migration reference** were reconstructed from the supplied legacy SadraAQMS source. They are compatibility references, not claims of laboratory or field validation.
+**Ashkan Motaei** — Software Engineer / Front-End & Industrial Software Developer
 
-### Migrated protocol families catalogued
+GitHub: `ashkan20171`
 
-Aeroqual, AIO2 9800, AMA, API/Enviro, BAM/E-BAM, AE/AE33, Ecotech/Serinus, ESA/ESA Modbus, GC995/GC Alpha, GRIMM, HORIBA serial/LAN, Delta OHM LEQ/Weather, TM1240, Palas, Serinus S50, SWAM, Teledyne, Thermo Scientific, TP Analog, Unitec, Davis Vantage, Vaisala WXT510 and DAQ/analog sources.
+---
 
-
-## v7.0 Analyzer Parameter Center
-- Analyzer/driver picker built from the migrated hardware catalog.
-- Gas/measurement list changes dynamically for the selected analyzer family.
-- Multi-measurement selection is persisted per analyzer while retaining a primary measurement for the existing acquisition pipeline.
-- Manufacturer, model, transport and protocol metadata are auto-populated from the selected driver profile.
-- Includes gas, particulate, black-carbon, LEQ, analog and weather measurement profiles derived from the supplied legacy sources.
-- Legacy analyzer source files remain in `LegacyAnalyzerSources` for auditable migration; unvalidated hardware protocols are not falsely marked production-ready.
-
-## v9.0 Operations & QA expansion
-- Added Data Quality & QA Center for analyzer/measurement/range governance.
-- Added Commissioning & Readiness workflow with configuration-derived checks and explicit operator sign-off items.
-- Added Configuration Governance & Recovery center with analyzer configuration backup inventory and controlled recovery messaging.
-- Expanded the legacy-inspired Operations menu and quick toolbar without removing v8 functionality.
-- Preserved Analyzer Studio, multi-measurement/gas mapping, real-hardware acquisition guardrails, all retained legacy analyzer sources, driver catalog, calibration, maintenance, digital twin, incidents, data explorer and integration hub.
-
-
-## v10.2 Operational Command Dashboard
-- Removed duplicate Current Data / Analyzer Parameters / Alarms / Historical quick-action buttons from the Dashboard.
-- Navigation remains available through the persistent top menu and toolbar.
-- Dashboard now focuses on station KPIs, operational status, and analyzer fleet summary.
-
-
-## v10.2 Operational Command Dashboard
-- Dashboard is now information-only: no duplicate navigation buttons.
-- Adds current AQI from the latest stored live measurement, 24-hour PM2.5/PM10 trend, threshold-condition summary, weather snapshot, station uptime, analyzer counts and fleet snapshot.
-- Values are sourced from stored acquisition data; unavailable data is shown as unavailable rather than fabricated.
+If you are reviewing this repository as an engineering portfolio, the most representative areas are the acquisition lifecycle, analyzer health registry, real-hardware safety behavior, Analyzer Driver Catalog, Operations Dashboard, Driver Test Bench, Calibration/QA workflows, and configuration governance surfaces.
